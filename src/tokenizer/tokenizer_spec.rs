@@ -2,7 +2,7 @@ use super::*;
 
 #[test]
 fn testing_tokenize() {
-  let formula = String::from("-*/+()[]{} ");
+  let formula = String::from("-*/+()[]{} 1.2");
 
   let tokens = tokenize(formula).unwrap();
 
@@ -51,6 +51,10 @@ fn testing_tokenize() {
       token_type: TokenType::Space,
       char_value: String::from(' '),
     },
+    Token {
+      token_type: TokenType::Operand(Operand::Number),
+      char_value: String::from("1.2"),
+    },
   ];
 
   assert_eq!(tokens, expected_tokens);
@@ -58,8 +62,9 @@ fn testing_tokenize() {
 
 #[test]
 fn testing_join_spaces() {
-  let tokens = tokenize(String::from("   ")).unwrap();
-  let tokens_with_joined_space = join_spaces(tokenize(String::from("   ")).unwrap());
+  let formula = String::from("   ");
+  let tokens = run_tokenize(formula.clone(), Vec::new(), 0).unwrap();
+  let tokens_with_joined_space = join_spaces(run_tokenize(formula, Vec::new(), 0).unwrap());
 
   let expected_tokens = vec![
     Token {
@@ -83,6 +88,69 @@ fn testing_join_spaces() {
 
   assert_eq!(tokens, expected_tokens);
   assert_eq!(tokens_with_joined_space, expected_tokens_with_joined_space);
+}
+
+#[test]
+fn testing_digits_into_number() {
+  let formula = String::from("123.45");
+  let tokens = run_tokenize(formula.clone(), Vec::new(), 0).unwrap();
+  let tokens_number = digits_into_number(run_tokenize(formula, Vec::new(), 0).unwrap());
+
+  let expected_tokens = vec![
+    Token {
+      token_type: TokenType::Operand(Operand::Digit),
+      char_value: String::from('1'),
+    },
+    Token {
+      token_type: TokenType::Operand(Operand::Digit),
+      char_value: String::from('2'),
+    },
+    Token {
+      token_type: TokenType::Operand(Operand::Digit),
+      char_value: String::from('3'),
+    },
+    Token {
+      token_type: TokenType::Operand(Operand::Dot),
+      char_value: String::from('.'),
+    },
+    Token {
+      token_type: TokenType::Operand(Operand::Digit),
+      char_value: String::from('4'),
+    },
+    Token {
+      token_type: TokenType::Operand(Operand::Digit),
+      char_value: String::from('5'),
+    },
+  ];
+
+  let expected_tokens_number = vec![Token {
+    token_type: TokenType::Operand(Operand::Number),
+    char_value: String::from("123.45"),
+  }];
+
+  assert_eq!(tokens, expected_tokens);
+  assert_eq!(tokens_number, expected_tokens_number);
+}
+
+#[test]
+#[should_panic = "Number should not contains more than one ."]
+fn testing_digits_into_number_should_not_accept_more_than_one_dot() {
+  let formula = String::from("12.3.45");
+  digits_into_number(tokenize(formula).unwrap());
+}
+
+#[test]
+#[should_panic = "Number should not start with ."]
+fn testing_digits_into_number_should_not_start_with_dot() {
+  let formula = String::from(".45");
+  digits_into_number(tokenize(formula).unwrap());
+}
+
+#[test]
+#[should_panic = "Number should not end with ."]
+fn testing_digits_into_number_should_not_end_with_dot() {
+  let formula = String::from("007.");
+  digits_into_number(tokenize(formula).unwrap());
 }
 
 #[test]

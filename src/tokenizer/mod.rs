@@ -8,6 +8,8 @@ pub fn tokenize(formula: String) -> Result<Vec<Token>, String> {
   let tokens = Vec::new();
   let current: usize = 0;
   run_tokenize(formula, tokens, current)
+    .map(digits_into_number)
+    .map(join_spaces)
 }
 
 fn run_tokenize(
@@ -47,22 +49,25 @@ fn join_spaces(tokens: Vec<Token>) -> Vec<Token> {
   let mut token_space: Option<Token> = None;
 
   for token in tokens {
-    if token.token_type == TokenType::Space {
-      token_space = Some(Token {
-        token_type: TokenType::Space,
-        char_value: if let Some(prev_token) = token_space {
-          format!("{}{}", prev_token.char_value, token.char_value)
-        } else {
-          token.char_value
-        },
-      });
-      continue;
+    match token.token_type {
+      TokenType::Space => {
+        token_space = Some(Token {
+          token_type: TokenType::Space,
+          char_value: match token_space {
+            Some(prev_token) => format!("{}{}", prev_token.char_value, token.char_value),
+            None => token.char_value,
+          },
+        });
+      }
+
+      _ => {
+        if let Some(prev_token) = token_space {
+          token_list.push(prev_token);
+          token_space = None;
+        }
+        token_list.push(token);
+      }
     }
-    if let Some(prev_token) = token_space {
-      token_list.push(prev_token);
-      token_space = None;
-    }
-    token_list.push(token);
   }
 
   if let Some(prev_token) = token_space {
@@ -72,18 +77,72 @@ fn join_spaces(tokens: Vec<Token>) -> Vec<Token> {
   token_list
 }
 
-static TOKENIZERS: [fn(formula: &String, current: usize) -> Option<Token>; 11] = [
+fn digits_into_number(tokens: Vec<Token>) -> Vec<Token> {
+  let mut token_list: Vec<Token> = Vec::new();
+  let mut token_number: Option<Token> = None;
+
+  for token in tokens {
+    match token.token_type {
+      TokenType::Operand(Operand::Digit) => {
+        token_number = Some(Token {
+          token_type: TokenType::Operand(Operand::Number),
+          char_value: match token_number {
+            Some(prev_token) => format!("{}{}", prev_token.char_value, token.char_value),
+            None => token.char_value,
+          },
+        })
+      }
+
+      TokenType::Operand(Operand::Dot) => {
+        token_number = match token_number {
+          Some(prev_token) if prev_token.char_value.contains(".") => {
+            panic!("Number should not contains more than one .")
+          }
+          Some(prev_token) => Some(Token {
+            token_type: TokenType::Operand(Operand::Number),
+            char_value: format!("{}{}", prev_token.char_value, token.char_value),
+          }),
+          None => panic!("Number should not start with ."),
+        }
+      }
+
+      _ => {
+        if let Some(prev_token) = token_number {
+          token_list.push(prev_token);
+          token_number = None;
+        }
+        token_list.push(token);
+      }
+    }
+  }
+
+  if let Some(prev_token) = token_number {
+    token_list.push(prev_token);
+  }
+
+  for token in &token_list {
+    if token.token_type == TokenType::Operand(Operand::Number) && token.char_value.ends_with(".") {
+      panic!("Number should not end with .")
+    }
+  }
+
+  token_list
+}
+
+static TOKENIZERS: [fn(formula: &String, current: usize) -> Option<Token>; 13] = [
   tokenize_addition,
-  tokenize_division,
-  tokenize_multiplication,
-  tokenize_subtration,
-  tokenize_box_bracket_open,
   tokenize_box_bracket_close,
-  tokenize_curly_bracket_open,
+  tokenize_box_bracket_open,
   tokenize_curly_bracket_close,
-  tokenize_round_bracket_open,
+  tokenize_curly_bracket_open,
+  tokenize_decimal_digit,
+  tokenize_division,
+  tokenize_dot,
+  tokenize_multiplication,
   tokenize_round_bracket_close,
+  tokenize_round_bracket_open,
   tokenize_space,
+  tokenize_subtration,
 ];
 
 fn tokenize_addition(formula: &String, current: usize) -> Option<Token> {
