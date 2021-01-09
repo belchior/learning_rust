@@ -2,7 +2,7 @@ use super::*;
 
 #[test]
 fn testing_tokenize() {
-  let formula = String::from("-*/+()[]{} 1.2");
+  let formula = String::from("-*/+()[]{}  1.2");
 
   let tokens = tokenize(formula).unwrap();
 
@@ -49,7 +49,7 @@ fn testing_tokenize() {
     },
     Token {
       token_type: TokenType::Space,
-      char_value: String::from(' '),
+      char_value: String::from("  "),
     },
     Token {
       token_type: TokenType::Operand(Operand::Number),

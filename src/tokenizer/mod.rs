@@ -1,9 +1,3 @@
-#[derive(PartialEq, Debug)]
-pub struct Token {
-  token_type: TokenType,
-  char_value: String,
-}
-
 pub fn tokenize(formula: String) -> Result<Vec<Token>, String> {
   let tokens = Vec::new();
   let current: usize = 0;
@@ -250,6 +244,12 @@ fn tokenize_char(
     });
   }
   None
+}
+
+#[derive(PartialEq, Debug)]
+pub struct Token {
+  token_type: TokenType,
+  char_value: String,
 }
 
 #[derive(PartialEq, Debug)]
