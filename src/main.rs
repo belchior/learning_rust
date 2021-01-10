@@ -1,6 +1,9 @@
-use std::env;
-
+mod error;
+mod parser;
 mod tokenizer;
+
+use error::Error;
+use std::env;
 
 fn main() {
   let mut args = env::args();
@@ -19,7 +22,7 @@ fn main() {
 pub struct Calc;
 
 impl Calc {
-  pub fn calculate(formula: String) -> Result<Vec<tokenizer::Token>, String> {
+  pub fn calculate(formula: String) -> Result<Vec<tokenizer::Token>, Error> {
     tokenizer::tokenize(formula)
   }
 }

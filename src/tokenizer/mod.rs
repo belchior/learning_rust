@@ -1,4 +1,6 @@
-pub fn tokenize(formula: String) -> Result<Vec<Token>, String> {
+use crate::Error;
+
+pub fn tokenize(formula: String) -> Result<Vec<Token>, Error> {
   let tokens = Vec::new();
   let current: usize = 0;
   run_tokenize(formula, tokens, current)
@@ -10,7 +12,7 @@ fn run_tokenize(
   formula: String,
   mut tokens: Vec<Token>,
   mut current: usize,
-) -> Result<Vec<Token>, String> {
+) -> Result<Vec<Token>, Error> {
   if current >= formula.len() {
     return Ok(tokens);
   }
@@ -30,7 +32,7 @@ fn run_tokenize(
       "Error: Undefined symbol start {}",
       formula.split_at(current).1
     );
-    return Err(err_message);
+    return Err(Error::UndefinedSymbol(err_message));
   }
 
   tokens.append(&mut new_tokens);
