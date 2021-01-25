@@ -1,104 +1,42 @@
 #![allow(dead_code)]
 
+use crate::tokenizer::{Key, Kind, Token};
 use crate::Error;
 
 #[derive(Debug, PartialEq)]
-pub enum Kind {
-  Bracket,
-  Digit,
-  Operand,
-  Operator,
-  Space,
-}
-
-#[derive(Debug, PartialEq)]
-pub enum Token {
-  Addition,          // '+',
-  Subtraction,       // '-',
-  Multiplication,    // '*',
-  Division,          // '/',
-  BracketRoundOpen,  // '(',
-  BracketRoundClose, // ')',
-  BracketBoxOpen,    // '[',
-  BracketBoxClose,   // ']',
-  BracketCurlyOpen,  // '{',
-  BracketCurlyClose, // '}',
-  Dot,               // '.',
-  Zero,              // '0',
-  One,               // '1',
-  Two,               // '2',
-  Three,             // '3',
-  Four,              // '4',
-  Five,              // '5',
-  Six,               // '6',
-  Seven,             // '7',
-  Eight,             // '8',
-  Nine,              // '9',
-  Space(String),     // ' ',
-  Number(String),    // '1.2',
-}
-impl Token {
-  pub fn value(&self) -> String {
-    use Token::*;
-    match self {
-      Addition => '+'.to_string(),
-      Subtraction => '-'.to_string(),
-      Multiplication => '*'.to_string(),
-      Division => '/'.to_string(),
-      BracketRoundOpen => '('.to_string(),
-      BracketRoundClose => ')'.to_string(),
-      BracketBoxOpen => '['.to_string(),
-      BracketBoxClose => ']'.to_string(),
-      BracketCurlyOpen => '{'.to_string(),
-      BracketCurlyClose => '}'.to_string(),
-      Dot => '.'.to_string(),
-      Zero => '0'.to_string(),
-      One => '1'.to_string(),
-      Two => '2'.to_string(),
-      Three => '3'.to_string(),
-      Four => '4'.to_string(),
-      Five => '5'.to_string(),
-      Six => '6'.to_string(),
-      Seven => '7'.to_string(),
-      Eight => '8'.to_string(),
-      Nine => '9'.to_string(),
-      Space(value) => value.clone(),
-      Number(value) => value.clone(),
-    }
-  }
-
-  pub fn kind(&self) -> Kind {
-    use Token::*;
-    match *self {
-      Space(_) => Kind::Space,
-      Number(_) => Kind::Operand,
-      Addition | Subtraction | Multiplication | Division => Kind::Operator,
-      Zero | One | Two | Three | Four | Five | Six | Seven | Eight | Nine | Dot => Kind::Digit,
-      BracketBoxOpen | BracketBoxClose | BracketCurlyOpen | BracketCurlyClose
-      | BracketRoundOpen | BracketRoundClose => Kind::Bracket,
-    }
-  }
-}
-
-pub enum Node {
+enum Node {
   Ast(Box<Ast>),
   Token(Token),
 }
 
-pub struct Ast {
-  pub operator: Option<Token>,
-  pub operand_a: Option<Node>,
-  pub operand_b: Option<Node>,
+#[derive(Debug, PartialEq)]
+struct Ast {
+  operator: Option<Token>,
+  operand_a: Option<Node>,
+  operand_b: Option<Node>,
 }
 impl Ast {
+  fn new() -> Ast {
+    Ast {
+      operator: Ast::empty_operator(),
+      operand_a: Ast::empty(),
+      operand_b: Ast::empty(),
+    }
+  }
   fn ast(ast: Ast) -> Option<Node> {
     Some(Node::Ast(Box::new(ast)))
   }
   fn token(token: Token) -> Option<Node> {
-    Some(Node::Token(token))
+    match token.kind {
+      Kind::Number => Some(Node::Token(token)),
+      _ => None,
+    }
   }
   fn operator(token: Token) -> Option<Token> {
-    Some(token)
+    match token.kind {
+      Kind::Operator => Some(token),
+      _ => None,
+    }
   }
   fn empty_operator() -> Option<Token> {
     Option::None
@@ -111,41 +49,31 @@ impl Ast {
   }
 }
 
-fn remove_space(tokens: Vec<Token>) -> Vec<Token> {
-  tokens
-    .into_iter()
-    .filter(|token| token.kind() != Kind::Space)
-    .collect()
-}
-
-pub fn parser(tokens: Result<Vec<Token>, Error>) -> Result<Ast, Error> {
+fn parser(tokens: Result<Vec<Token>, Error>) -> Result<Ast, Error> {
   let tokens = remove_space(tokens?);
   if tokens.len() == 0 {
     return Err(Error::InvalidExpression);
   }
-  let ast = Ast {
-    operator: Ast::empty_operator(),
-    operand_a: Ast::empty(),
-    operand_b: Ast::empty(),
-  };
+  let ast = Ast::new();
+
   to_ast(Ok(tokens), ast)
 }
 
 fn to_ast(tokens: Result<Vec<Token>, Error>, ast: Ast) -> Result<Ast, Error> {
   let mut tokens = tokens?;
-  let len = tokens.len();
+  let token_len = tokens.len();
 
-  if len == 0 {
+  if token_len == 0 {
     return Ok(ast);
   }
 
-  if len == 1 && ast.is_empty() {
+  if token_len == 1 && ast.is_empty() {
     let token = tokens.pop().unwrap();
 
-    return match token.kind() {
-      Kind::Operand => Ok(Ast {
-        operator: Ast::operator(Token::Addition),
-        operand_a: Ast::token(Token::Zero),
+    return match token.kind {
+      Kind::Number => Ok(Ast {
+        operator: Ast::operator(Token::new_operator(Key::Addition)),
+        operand_a: Ast::token(Token::new_number(vec![Key::Zero])),
         operand_b: Ast::token(token),
       }),
       _ => Err(Error::InvalidExpression),
@@ -153,19 +81,67 @@ fn to_ast(tokens: Result<Vec<Token>, Error>, ast: Ast) -> Result<Ast, Error> {
   }
 
   if start_with_sign(&tokens) && ast.is_empty() {
-    let mut new_tokens = vec![Token::Zero];
+    let mut new_tokens = vec![Token::new_number(vec![Key::Zero])];
     new_tokens.append(&mut tokens);
     return to_ast(Ok(new_tokens), ast);
   }
 
-  Ok(ast)
+  let token = tokens.first().unwrap();
+
+  match token.kind {
+    Kind::Operator => resolve_operator(tokens, ast),
+    Kind::Number => resolve_number(tokens, ast),
+    _ => Err(Error::InvalidTokenSequence),
+  }
+}
+
+fn remove_space(tokens: Vec<Token>) -> Vec<Token> {
+  tokens.into_iter().filter(|token| token.kind != Kind::Space).collect()
 }
 
 fn start_with_sign(tokens: &Vec<Token>) -> bool {
   if tokens.len() == 0 {
     return false;
   }
-  *&tokens[0] == Token::Addition || *&tokens[0] == Token::Subtraction
+  let key = &tokens[0].keys[0];
+  *key == Key::Addition || *key == Key::Subtraction
+}
+
+fn resolve_operator(mut tokens: Vec<Token>, mut ast: Ast) -> Result<Ast, Error> {
+  match ast.operator {
+    None => {
+      let token = tokens.remove(0);
+      ast.operator = Ast::operator(token);
+      to_ast(Ok(tokens), ast)
+    }
+    Some(_) => panic!("Operador já existe"),
+  }
+}
+
+fn resolve_number(mut tokens: Vec<Token>, mut ast: Ast) -> Result<Ast, Error> {
+  match ast {
+    Ast {
+      operator: _,
+      operand_a: None,
+      operand_b: None,
+    } => {
+      let token = tokens.remove(0);
+      ast.operand_a = Ast::token(token);
+      to_ast(Ok(tokens), ast)
+    }
+    Ast {
+      operator: _,
+      operand_a: Some(_),
+      operand_b: None,
+    } => {
+      let token = tokens.remove(0);
+      ast.operand_b = Ast::token(token);
+      to_ast(Ok(tokens), ast)
+    }
+    _ => {
+      panic!("Ast cheia")
+    }
+  }
 }
 
 #[cfg(test)]
