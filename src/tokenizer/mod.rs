@@ -1,5 +1,218 @@
 use crate::Error;
 
+#[derive(Debug, PartialEq)]
+pub enum Kind {
+  Bracket,
+  Digit,
+  Dot,
+  Number, // especial
+  Operator,
+  Space, // especial
+}
+impl Kind {
+  fn keys(&self) -> Vec<Key> {
+    use Key::*;
+    match *self {
+      Kind::Bracket => vec![RoundOpen, RoundClose, BoxOpen, BoxClose, CurlyOpen, CurlyClose],
+      Kind::Digit => vec![Zero, One, Two, Three, Four, Five, Six, Seven, Eight, Nine],
+      Kind::Dot => vec![Dot],
+      Kind::Number => vec![Dot, Zero, One, Two, Three, Four, Five, Six, Seven, Eight, Nine],
+      Kind::Operator => vec![Addition, Subtraction, Multiplication, Division],
+      Kind::Space => vec![Space],
+    }
+  }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum Key {
+  // Kind::Bracket
+  RoundOpen,  // '(',
+  RoundClose, // ')',
+  BoxOpen,    // '[',
+  BoxClose,   // ']',
+  CurlyOpen,  // '{',
+  CurlyClose, // '}',
+
+  // Kind::Digit
+  Zero,  // '0',
+  One,   // '1',
+  Two,   // '2',
+  Three, // '3',
+  Four,  // '4',
+  Five,  // '5',
+  Six,   // '6',
+  Seven, // '7',
+  Eight, // '8',
+  Nine,  // '9',
+
+  // Kind::Dot
+  Dot, // '.',
+
+  // Kind::Operator
+  Addition,       // '+',
+  Subtraction,    // '-',
+  Multiplication, // '*',
+  Division,       // '/',
+
+  // Kind::Space
+  Space, // ' ',
+}
+impl Key {
+  fn into_key(char_value: char) -> Key {
+    use Key::*;
+    match char_value {
+      '(' => RoundOpen,
+      ')' => RoundClose,
+      '[' => BoxOpen,
+      ']' => BoxClose,
+      '{' => CurlyOpen,
+      '}' => CurlyClose,
+      '0' => Zero,
+      '1' => One,
+      '2' => Two,
+      '3' => Three,
+      '4' => Four,
+      '5' => Five,
+      '6' => Six,
+      '7' => Seven,
+      '8' => Eight,
+      '9' => Nine,
+      '.' => Dot,
+      '+' => Addition,
+      '-' => Subtraction,
+      '*' => Multiplication,
+      '/' => Division,
+      ' ' => Space,
+      _ => panic!(format!("Undefined char: {}", char_value)),
+    }
+  }
+
+  fn kind(&self) -> Kind {
+    use Key::*;
+    match *self {
+      Space => Kind::Space,
+      Dot => Kind::Dot,
+      Zero | One | Two | Three | Four | Five | Six | Seven | Eight | Nine => Kind::Digit,
+      Addition | Subtraction | Multiplication | Division => Kind::Operator,
+      BoxOpen | BoxClose | CurlyOpen | CurlyClose | RoundOpen | RoundClose => Kind::Bracket,
+    }
+  }
+
+  fn to_char(&self) -> char {
+    use Key::*;
+    match self {
+      RoundOpen => '(',
+      RoundClose => ')',
+      BoxOpen => '[',
+      BoxClose => ']',
+      CurlyOpen => '{',
+      CurlyClose => '}',
+      Zero => '0',
+      One => '1',
+      Two => '2',
+      Three => '3',
+      Four => '4',
+      Five => '5',
+      Six => '6',
+      Seven => '7',
+      Eight => '8',
+      Nine => '9',
+      Dot => '.',
+      Addition => '+',
+      Subtraction => '-',
+      Multiplication => '*',
+      Division => '/',
+      Space => ' ',
+    }
+  }
+
+  fn to_string(&self) -> String {
+    self.to_char().to_string()
+  }
+}
+
+#[derive(Debug, PartialEq)]
+pub struct Token {
+  pub kind: Kind,
+  pub keys: Vec<Key>,
+}
+impl Token {
+  fn new(kind: Kind, key: Key) -> Token {
+    if key.kind() != kind {
+      panic!("Invalid token arguments");
+    }
+    Token { kind, keys: vec![key] }
+  }
+
+  pub fn new_number(keys: Vec<Key>) -> Token {
+    if keys.len() == 0 {
+      panic!("Invalid token arguments")
+    }
+
+    {
+      let valid_keys = Kind::Number.keys();
+      let is_valid_keys = keys
+        .iter()
+        .fold(true, |acc, key| acc == true && valid_keys.contains(&key));
+
+      if is_valid_keys == false {
+        panic!("Invalid token arguments")
+      }
+    }
+
+    {
+      let mut is_valid_sequence = true;
+
+      if keys.starts_with(&[Key::Dot]) || keys.ends_with(&[Key::Dot]) {
+        is_valid_sequence = false;
+      }
+
+      if keys.iter().filter(|&key| key.kind() == Kind::Dot).count() > 1 {
+        is_valid_sequence = false;
+      }
+
+      if is_valid_sequence == false {
+        panic!("Invalid token arguments")
+      }
+    }
+
+    Token {
+      kind: Kind::Number,
+      keys,
+    }
+  }
+
+  pub fn new_operator(key: Key) -> Token {
+    Self::new(Kind::Operator, key)
+  }
+
+  pub fn new_space(keys: Vec<Key>) -> Token {
+    if keys.len() == 0 {
+      panic!("Invalid token arguments")
+    }
+
+    {
+      let is_valid_keys = keys.iter().filter(|key| key.kind() != Kind::Space).count() == 0;
+
+      if is_valid_keys == false {
+        panic!("Invalid token arguments")
+      }
+    }
+
+    Token {
+      kind: Kind::Space,
+      keys,
+    }
+  }
+
+  fn to_string(&self) -> String {
+    self.keys.iter().fold("".to_string(), |mut acc, key| {
+      acc.push_str(&key.to_string());
+      acc
+    })
+  }
+}
+
 pub fn tokenize(formula: String) -> Result<Vec<Token>, Error> {
   let tokens = Vec::new();
   let current: usize = 0;
@@ -8,11 +221,7 @@ pub fn tokenize(formula: String) -> Result<Vec<Token>, Error> {
     .map(join_spaces)
 }
 
-fn run_tokenize(
-  formula: String,
-  mut tokens: Vec<Token>,
-  mut current: usize,
-) -> Result<Vec<Token>, Error> {
+fn run_tokenize(formula: String, mut tokens: Vec<Token>, mut current: usize) -> Result<Vec<Token>, Error> {
   if current >= formula.len() {
     return Ok(tokens);
   }
@@ -22,16 +231,13 @@ fn run_tokenize(
   for tokenizer in &TOKENIZERS {
     let token = tokenizer(&formula, current);
     if let Some(token) = token {
-      current += token.char_value.len();
+      current += token.to_string().len();
       new_tokens.push(token);
     }
   }
 
   if new_tokens.len() == 0 {
-    let err_message = format!(
-      "Error: Undefined symbol start {}",
-      formula.split_at(current).1
-    );
+    let err_message = format!("Error: Undefined symbol start {}", formula.split_at(current).1);
     return Err(Error::UndefinedSymbol(err_message));
   }
 
@@ -45,13 +251,13 @@ fn join_spaces(tokens: Vec<Token>) -> Vec<Token> {
   let mut token_space: Option<Token> = None;
 
   for token in tokens {
-    match token.token_type {
-      TokenType::Space => {
+    match token.kind {
+      Kind::Space => {
         token_space = Some(Token {
-          token_type: TokenType::Space,
-          char_value: match token_space {
-            Some(prev_token) => format!("{}{}", prev_token.char_value, token.char_value),
-            None => token.char_value,
+          kind: Kind::Space,
+          keys: match token_space {
+            None => token.keys,
+            Some(prev_token) => vec![prev_token.keys, token.keys].concat(),
           },
         });
       }
@@ -78,27 +284,27 @@ fn digits_into_number(tokens: Vec<Token>) -> Vec<Token> {
   let mut token_number: Option<Token> = None;
 
   for token in tokens {
-    match token.token_type {
-      TokenType::Operand(Operand::Digit) => {
+    match token.kind {
+      Kind::Digit => {
         token_number = Some(Token {
-          token_type: TokenType::Operand(Operand::Number),
-          char_value: match token_number {
-            Some(prev_token) => format!("{}{}", prev_token.char_value, token.char_value),
-            None => token.char_value,
+          kind: Kind::Number,
+          keys: match token_number {
+            None => token.keys,
+            Some(prev_token) => vec![prev_token.keys, token.keys].concat(),
           },
         })
       }
 
-      TokenType::Operand(Operand::Dot) => {
+      Kind::Dot => {
         token_number = match token_number {
-          Some(prev_token) if prev_token.char_value.contains(".") => {
+          None => panic!("Number should not start with ."),
+          Some(prev_token) if prev_token.keys.contains(&Key::Dot) => {
             panic!("Number should not contains more than one .")
           }
           Some(prev_token) => Some(Token {
-            token_type: TokenType::Operand(Operand::Number),
-            char_value: format!("{}{}", prev_token.char_value, token.char_value),
+            kind: Kind::Number,
+            keys: vec![prev_token.keys, token.keys].concat(),
           }),
-          None => panic!("Number should not start with ."),
         }
       }
 
@@ -117,7 +323,7 @@ fn digits_into_number(tokens: Vec<Token>) -> Vec<Token> {
   }
 
   for token in &token_list {
-    if token.token_type == TokenType::Operand(Operand::Number) && token.char_value.ends_with(".") {
+    if token.kind == Kind::Number && token.keys.ends_with(&[Key::Dot]) {
       panic!("Number should not end with .")
     }
   }
@@ -142,146 +348,79 @@ static TOKENIZERS: [fn(formula: &String, current: usize) -> Option<Token>; 13] =
 ];
 
 fn tokenize_addition(formula: &String, current: usize) -> Option<Token> {
-  tokenize_char(
-    TokenType::Operator(Operator::Addition),
-    '+',
-    &formula,
-    current,
-  )
+  tokenize_char(Kind::Operator, '+', &formula, current)
 }
 
 fn tokenize_division(formula: &String, current: usize) -> Option<Token> {
-  tokenize_char(
-    TokenType::Operator(Operator::Division),
-    '/',
-    formula,
-    current,
-  )
+  tokenize_char(Kind::Operator, '/', formula, current)
 }
 
 fn tokenize_multiplication(formula: &String, current: usize) -> Option<Token> {
-  tokenize_char(
-    TokenType::Operator(Operator::Multiplication),
-    '*',
-    formula,
-    current,
-  )
+  tokenize_char(Kind::Operator, '*', formula, current)
 }
 
 fn tokenize_subtration(formula: &String, current: usize) -> Option<Token> {
-  tokenize_char(
-    TokenType::Operator(Operator::Subtration),
-    '-',
-    formula,
-    current,
-  )
+  tokenize_char(Kind::Operator, '-', formula, current)
 }
 
 fn tokenize_box_bracket_open(formula: &String, current: usize) -> Option<Token> {
-  tokenize_bracket(formula, current, Bracket::Box, '[')
+  tokenize_bracket(formula, current, Key::BoxOpen, '[')
 }
 
 fn tokenize_box_bracket_close(formula: &String, current: usize) -> Option<Token> {
-  tokenize_bracket(formula, current, Bracket::Box, ']')
+  tokenize_bracket(formula, current, Key::BoxClose, ']')
 }
 
 fn tokenize_curly_bracket_open(formula: &String, current: usize) -> Option<Token> {
-  tokenize_bracket(formula, current, Bracket::Curly, '{')
+  tokenize_bracket(formula, current, Key::CurlyOpen, '{')
 }
 
 fn tokenize_curly_bracket_close(formula: &String, current: usize) -> Option<Token> {
-  tokenize_bracket(formula, current, Bracket::Curly, '}')
+  tokenize_bracket(formula, current, Key::CurlyClose, '}')
 }
 
 fn tokenize_round_bracket_open(formula: &String, current: usize) -> Option<Token> {
-  tokenize_bracket(formula, current, Bracket::Round, '(')
+  tokenize_bracket(formula, current, Key::RoundOpen, '(')
 }
 
 fn tokenize_round_bracket_close(formula: &String, current: usize) -> Option<Token> {
-  tokenize_bracket(formula, current, Bracket::Round, ')')
+  tokenize_bracket(formula, current, Key::RoundClose, ')')
 }
 
 fn tokenize_space(formula: &String, current: usize) -> Option<Token> {
-  tokenize_char(TokenType::Space, ' ', formula, current)
+  tokenize_char(Kind::Space, ' ', formula, current)
 }
 
 fn tokenize_dot(formula: &String, current: usize) -> Option<Token> {
-  tokenize_char(TokenType::Operand(Operand::Dot), '.', formula, current)
+  tokenize_char(Kind::Dot, '.', formula, current)
+}
+
+fn tokenize_char(kind: Kind, char_value: char, formula: &String, current: usize) -> Option<Token> {
+  match formula.chars().nth(current) {
+    Some(value) if value == char_value => Some(Token {
+      kind,
+      keys: vec![Key::into_key(char_value)],
+    }),
+    Some(_) => None,
+    None => None,
+  }
+}
+
+fn tokenize_bracket(formula: &String, current: usize, bracket: Key, char_value: char) -> Option<Token> {
+  match bracket.kind() {
+    Kind::Bracket => tokenize_char(Kind::Bracket, char_value, formula, current),
+    _ => panic!("Invalid kind"),
+  }
 }
 
 fn tokenize_decimal_digit(formula: &String, current: usize) -> Option<Token> {
   let digits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
   let value = formula.chars().nth(current);
 
-  for digit in digits.iter() {
-    if value == Some(*digit) {
-      return Some(Token {
-        token_type: TokenType::Operand(Operand::Digit),
-        char_value: String::from(*digit),
-      });
-    }
-  }
-  None
-}
-
-fn tokenize_bracket(
-  formula: &String,
-  current: usize,
-  bracket: Bracket,
-  char_value: char,
-) -> Option<Token> {
-  tokenize_char(TokenType::Bracket(bracket), char_value, formula, current)
-}
-
-fn tokenize_char(
-  token_type: TokenType,
-  char_value: char,
-  formula: &String,
-  current: usize,
-) -> Option<Token> {
-  if formula.chars().nth(current) == Some(char_value) {
-    return Some(Token {
-      token_type,
-      char_value: String::from(char_value),
-    });
-  }
-  None
-}
-
-#[derive(PartialEq, Debug)]
-pub struct Token {
-  token_type: TokenType,
-  char_value: String,
-}
-
-#[derive(PartialEq, Debug)]
-enum Operator {
-  Addition,
-  Division,
-  Multiplication,
-  Subtration,
-}
-
-#[derive(PartialEq, Debug)]
-enum Operand {
-  Digit,
-  Dot,
-  Number,
-}
-
-#[derive(PartialEq, Debug)]
-enum Bracket {
-  Box,
-  Curly,
-  Round,
-}
-
-#[derive(PartialEq, Debug)]
-enum TokenType {
-  Bracket(Bracket),
-  Operand(Operand),
-  Operator(Operator),
-  Space,
+  digits.iter().find(|&&digit| Some(digit) == value).map(|&digit| Token {
+    kind: Kind::Digit,
+    keys: vec![Key::into_key(digit)],
+  })
 }
 
 #[cfg(test)]

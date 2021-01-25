@@ -8,52 +8,52 @@ fn testing_tokenize() {
 
   let expected_tokens = vec![
     Token {
-      token_type: TokenType::Operator(Operator::Subtration),
-      char_value: String::from('-'),
+      kind: Kind::Operator,
+      keys: vec![Key::Subtraction],
     },
     Token {
-      token_type: TokenType::Operator(Operator::Multiplication),
-      char_value: String::from('*'),
+      kind: Kind::Operator,
+      keys: vec![Key::Multiplication],
     },
     Token {
-      token_type: TokenType::Operator(Operator::Division),
-      char_value: String::from('/'),
+      kind: Kind::Operator,
+      keys: vec![Key::Division],
     },
     Token {
-      token_type: TokenType::Operator(Operator::Addition),
-      char_value: String::from('+'),
+      kind: Kind::Operator,
+      keys: vec![Key::Addition],
     },
     Token {
-      token_type: TokenType::Bracket(Bracket::Round),
-      char_value: String::from('('),
+      kind: Kind::Bracket,
+      keys: vec![Key::RoundOpen],
     },
     Token {
-      token_type: TokenType::Bracket(Bracket::Round),
-      char_value: String::from(')'),
+      kind: Kind::Bracket,
+      keys: vec![Key::RoundClose],
     },
     Token {
-      token_type: TokenType::Bracket(Bracket::Box),
-      char_value: String::from('['),
+      kind: Kind::Bracket,
+      keys: vec![Key::BoxOpen],
     },
     Token {
-      token_type: TokenType::Bracket(Bracket::Box),
-      char_value: String::from(']'),
+      kind: Kind::Bracket,
+      keys: vec![Key::BoxClose],
     },
     Token {
-      token_type: TokenType::Bracket(Bracket::Curly),
-      char_value: String::from('{'),
+      kind: Kind::Bracket,
+      keys: vec![Key::CurlyOpen],
     },
     Token {
-      token_type: TokenType::Bracket(Bracket::Curly),
-      char_value: String::from('}'),
+      kind: Kind::Bracket,
+      keys: vec![Key::CurlyClose],
     },
     Token {
-      token_type: TokenType::Space,
-      char_value: String::from("  "),
+      kind: Kind::Space,
+      keys: vec![Key::Space, Key::Space],
     },
     Token {
-      token_type: TokenType::Operand(Operand::Number),
-      char_value: String::from("1.2"),
+      kind: Kind::Number,
+      keys: vec![Key::One, Key::Dot, Key::Two],
     },
   ];
 
@@ -68,22 +68,22 @@ fn testing_join_spaces() {
 
   let expected_tokens = vec![
     Token {
-      token_type: TokenType::Space,
-      char_value: String::from(' '),
+      kind: Kind::Space,
+      keys: vec![Key::Space],
     },
     Token {
-      token_type: TokenType::Space,
-      char_value: String::from(' '),
+      kind: Kind::Space,
+      keys: vec![Key::Space],
     },
     Token {
-      token_type: TokenType::Space,
-      char_value: String::from(' '),
+      kind: Kind::Space,
+      keys: vec![Key::Space],
     },
   ];
 
   let expected_tokens_with_joined_space = vec![Token {
-    token_type: TokenType::Space,
-    char_value: String::from("   "),
+    kind: Kind::Space,
+    keys: vec![Key::Space, Key::Space, Key::Space],
   }];
 
   assert_eq!(tokens, expected_tokens);
@@ -98,34 +98,34 @@ fn testing_digits_into_number() {
 
   let expected_tokens = vec![
     Token {
-      token_type: TokenType::Operand(Operand::Digit),
-      char_value: String::from('1'),
+      kind: Kind::Digit,
+      keys: vec![Key::One],
     },
     Token {
-      token_type: TokenType::Operand(Operand::Digit),
-      char_value: String::from('2'),
+      kind: Kind::Digit,
+      keys: vec![Key::Two],
     },
     Token {
-      token_type: TokenType::Operand(Operand::Digit),
-      char_value: String::from('3'),
+      kind: Kind::Digit,
+      keys: vec![Key::Three],
     },
     Token {
-      token_type: TokenType::Operand(Operand::Dot),
-      char_value: String::from('.'),
+      kind: Kind::Dot,
+      keys: vec![Key::Dot],
     },
     Token {
-      token_type: TokenType::Operand(Operand::Digit),
-      char_value: String::from('4'),
+      kind: Kind::Digit,
+      keys: vec![Key::Four],
     },
     Token {
-      token_type: TokenType::Operand(Operand::Digit),
-      char_value: String::from('5'),
+      kind: Kind::Digit,
+      keys: vec![Key::Five],
     },
   ];
 
   let expected_tokens_number = vec![Token {
-    token_type: TokenType::Operand(Operand::Number),
-    char_value: String::from("123.45"),
+    kind: Kind::Number,
+    keys: vec![Key::One, Key::Two, Key::Three, Key::Dot, Key::Four, Key::Five],
   }];
 
   assert_eq!(tokens, expected_tokens);
@@ -156,11 +156,11 @@ fn testing_digits_into_number_should_not_end_with_dot() {
 #[test]
 fn testing_tokenize_char() {
   let formula = String::from("1+2");
-  let token = tokenize_char(TokenType::Operator(Operator::Addition), '+', &formula, 1).unwrap();
+  let token = tokenize_char(Kind::Operator, '+', &formula, 1).unwrap();
 
   let expected_token = Token {
-    token_type: TokenType::Operator(Operator::Addition),
-    char_value: String::from('+'),
+    kind: Kind::Operator,
+    keys: vec![Key::Addition],
   };
 
   assert_eq!(token, expected_token);
@@ -172,8 +172,8 @@ fn testing_tokenize_addition() {
   let token = tokenize_addition(&formula, 1).unwrap();
 
   let expected_token = Token {
-    token_type: TokenType::Operator(Operator::Addition),
-    char_value: String::from('+'),
+    kind: Kind::Operator,
+    keys: vec![Key::Addition],
   };
 
   assert_eq!(token, expected_token);
@@ -185,8 +185,8 @@ fn testing_tokenize_division() {
   let token = tokenize_division(&formula, 1).unwrap();
 
   let expected_token = Token {
-    token_type: TokenType::Operator(Operator::Division),
-    char_value: String::from('/'),
+    kind: Kind::Operator,
+    keys: vec![Key::Division],
   };
 
   assert_eq!(token, expected_token);
@@ -198,8 +198,8 @@ fn testing_tokenize_multiplication() {
   let token = tokenize_multiplication(&formula, 1).unwrap();
 
   let expected_token = Token {
-    token_type: TokenType::Operator(Operator::Multiplication),
-    char_value: String::from('*'),
+    kind: Kind::Operator,
+    keys: vec![Key::Multiplication],
   };
 
   assert_eq!(token, expected_token);
@@ -211,8 +211,8 @@ fn testing_tokenize_subtration() {
   let token = tokenize_subtration(&formula, 1).unwrap();
 
   let expected_token = Token {
-    token_type: TokenType::Operator(Operator::Subtration),
-    char_value: String::from('-'),
+    kind: Kind::Operator,
+    keys: vec![Key::Subtraction],
   };
 
   assert_eq!(token, expected_token);
@@ -224,8 +224,8 @@ fn testing_tokenize_box_bracket_open() {
   let token = tokenize_box_bracket_open(&formula, 0).unwrap();
 
   let expected_token = Token {
-    token_type: TokenType::Bracket(Bracket::Box),
-    char_value: String::from('['),
+    kind: Kind::Bracket,
+    keys: vec![Key::BoxOpen],
   };
 
   assert_eq!(token, expected_token);
@@ -237,8 +237,8 @@ fn testing_tokenize_box_bracket_close() {
   let token = tokenize_box_bracket_close(&formula, 2).unwrap();
 
   let expected_token = Token {
-    token_type: TokenType::Bracket(Bracket::Box),
-    char_value: String::from(']'),
+    kind: Kind::Bracket,
+    keys: vec![Key::BoxClose],
   };
 
   assert_eq!(token, expected_token);
@@ -250,8 +250,8 @@ fn testing_tokenize_curly_bracket_open() {
   let token = tokenize_curly_bracket_open(&formula, 0).unwrap();
 
   let expected_token = Token {
-    token_type: TokenType::Bracket(Bracket::Curly),
-    char_value: String::from('{'),
+    kind: Kind::Bracket,
+    keys: vec![Key::CurlyOpen],
   };
 
   assert_eq!(token, expected_token);
@@ -263,8 +263,8 @@ fn testing_tokenize_curly_bracket_close() {
   let token = tokenize_curly_bracket_close(&formula, 2).unwrap();
 
   let expected_token = Token {
-    token_type: TokenType::Bracket(Bracket::Curly),
-    char_value: String::from('}'),
+    kind: Kind::Bracket,
+    keys: vec![Key::CurlyClose],
   };
 
   assert_eq!(token, expected_token);
@@ -276,8 +276,8 @@ fn testing_tokenize_round_bracket_open() {
   let token = tokenize_round_bracket_open(&formula, 0).unwrap();
 
   let expected_token = Token {
-    token_type: TokenType::Bracket(Bracket::Round),
-    char_value: String::from('('),
+    kind: Kind::Bracket,
+    keys: vec![Key::RoundOpen],
   };
 
   assert_eq!(token, expected_token);
@@ -289,11 +289,18 @@ fn testing_tokenize_round_bracket_close() {
   let token = tokenize_round_bracket_close(&formula, 2).unwrap();
 
   let expected_token = Token {
-    token_type: TokenType::Bracket(Bracket::Round),
-    char_value: String::from(')'),
+    kind: Kind::Bracket,
+    keys: vec![Key::RoundClose],
   };
 
   assert_eq!(token, expected_token);
+}
+
+#[test]
+#[should_panic = "Invalid kind"]
+fn testing_tokenize_bracket() {
+  let formula = String::from("(3)");
+  tokenize_bracket(&formula, 2, Key::Multiplication, '(').unwrap();
 }
 
 #[test]
@@ -302,8 +309,8 @@ fn testing_tokenize_space() {
   let token = tokenize_space(&formula, 1).unwrap();
 
   let expected_token = Token {
-    token_type: TokenType::Space,
-    char_value: String::from(' '),
+    kind: Kind::Space,
+    keys: vec![Key::Space],
   };
 
   assert_eq!(token, expected_token);
@@ -315,8 +322,8 @@ fn testing_tokenize_dot() {
   let token = tokenize_dot(&formula, 2).unwrap();
 
   let expected_token = Token {
-    token_type: TokenType::Operand(Operand::Dot),
-    char_value: String::from('.'),
+    kind: Kind::Dot,
+    keys: vec![Key::Dot],
   };
 
   assert_eq!(token, expected_token);
@@ -339,71 +346,71 @@ fn testing_tokenize_decimal_digit() {
   assert_eq!(
     token_zero,
     Token {
-      token_type: TokenType::Operand(Operand::Digit),
-      char_value: String::from('0'),
+      kind: Kind::Digit,
+      keys: vec![Key::Zero],
     }
   );
   assert_eq!(
     token_one,
     Token {
-      token_type: TokenType::Operand(Operand::Digit),
-      char_value: String::from('1'),
+      kind: Kind::Digit,
+      keys: vec![Key::One],
     }
   );
   assert_eq!(
     token_two,
     Token {
-      token_type: TokenType::Operand(Operand::Digit),
-      char_value: String::from('2'),
+      kind: Kind::Digit,
+      keys: vec![Key::Two],
     }
   );
   assert_eq!(
     token_three,
     Token {
-      token_type: TokenType::Operand(Operand::Digit),
-      char_value: String::from('3'),
+      kind: Kind::Digit,
+      keys: vec![Key::Three],
     }
   );
   assert_eq!(
     token_four,
     Token {
-      token_type: TokenType::Operand(Operand::Digit),
-      char_value: String::from('4'),
+      kind: Kind::Digit,
+      keys: vec![Key::Four],
     }
   );
   assert_eq!(
     token_five,
     Token {
-      token_type: TokenType::Operand(Operand::Digit),
-      char_value: String::from('5'),
+      kind: Kind::Digit,
+      keys: vec![Key::Five],
     }
   );
   assert_eq!(
     token_six,
     Token {
-      token_type: TokenType::Operand(Operand::Digit),
-      char_value: String::from('6'),
+      kind: Kind::Digit,
+      keys: vec![Key::Six],
     }
   );
   assert_eq!(
     token_seven,
     Token {
-      token_type: TokenType::Operand(Operand::Digit),
-      char_value: String::from('7'),
+      kind: Kind::Digit,
+      keys: vec![Key::Seven],
     }
   );
   assert_eq!(
     token_eight,
     Token {
-      token_type: TokenType::Operand(Operand::Digit),
-      char_value: String::from('8'),
+      kind: Kind::Digit,
+      keys: vec![Key::Eight],
     }
   );
   assert_eq!(
     token_nine,
     Token {
-      token_type: TokenType::Operand(Operand::Digit),
-      char_value: String::from('9'),
+      kind: Kind::Digit,
+      keys: vec![Key::Nine],
     }
   );
 }
