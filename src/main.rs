@@ -6,9 +6,7 @@ use error::Error;
 use std::env;
 
 fn main() {
-  let mut args = env::args();
-  args.next();
-  let formula = args.next();
+  let formula = env::args().nth(1);
 
   match formula {
     Some(formula) => {
@@ -19,10 +17,10 @@ fn main() {
   }
 }
 
-pub struct Calc;
+struct Calc;
 
 impl Calc {
-  pub fn calculate(formula: String) -> Result<Vec<tokenizer::Token>, Error> {
+  fn calculate(formula: String) -> Result<Vec<tokenizer::Token>, Error> {
     tokenizer::tokenize(formula)
   }
 }
