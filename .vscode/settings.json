@@ -1,5 +1,6 @@
 {
   "editor.formatOnSave": true,
   "editor.formatOnPaste": true,
-  "rust.all_features": true
+  "rust.all_features": true,
+  "editor.wordWrapColumn": 120
 }
