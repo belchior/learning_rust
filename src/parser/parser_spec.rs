@@ -1,5 +1,5 @@
 use super::*;
-use k9::*;
+use k9::assert_equal;
 use Key::*;
 
 #[test]

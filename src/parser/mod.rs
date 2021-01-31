@@ -2,7 +2,7 @@ use crate::tokenizer::{Key, Kind, Token};
 use crate::Error;
 
 #[derive(Debug, PartialEq)]
-enum Node {
+pub enum Node {
   Ast(Box<Ast>),
   Token(Token),
 }
@@ -14,13 +14,28 @@ pub struct Ast {
   operand_b: Option<Node>,
 }
 impl Ast {
-  fn new() -> Ast {
+  pub fn new(operator: Option<Token>, operand_a: Option<Node>, operand_b: Option<Node>) -> Ast {
     Ast {
-      operator: Ast::empty_operator(),
-      operand_a: Ast::empty(),
-      operand_b: Ast::empty(),
+      operator,
+      operand_a,
+      operand_b,
     }
   }
+  pub fn new_operator(key: Key) -> Option<Token> {
+    let token = Token::new_operator(key);
+    match token.kind {
+      Kind::Operator => Some(token),
+      _ => None,
+    }
+  }
+  pub fn new_number(keys: Vec<Key>) -> Option<Node> {
+    let token = Token::new_number(keys);
+    match token.kind {
+      Kind::Number => Some(Node::Token(token)),
+      _ => None,
+    }
+  }
+
   fn ast(ast: Ast) -> Option<Node> {
     Some(Node::Ast(Box::new(ast)))
   }
@@ -36,9 +51,6 @@ impl Ast {
       _ => None,
     }
   }
-  fn empty_operator() -> Option<Token> {
-    Option::None
-  }
   fn empty() -> Option<Node> {
     Option::None
   }
@@ -52,7 +64,7 @@ pub fn parse(tokens: Result<Vec<Token>, Error>) -> Result<Ast, Error> {
   if tokens.len() == 0 {
     return Err(Error::InvalidExpression);
   }
-  let ast = Ast::new();
+  let ast = Ast::new(None, None, None);
 
   to_ast(Ok(tokens), ast)
 }
