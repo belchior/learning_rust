@@ -1,6 +1,6 @@
 # Calc
 
-This project is a math expression calculator and compiler, the reason to it exists is to exercise the syntax, conventions and concepts of the [Rust lang](https://www.rust-lang.org/)
+This project is a math expression interpreter and calculator, the reason to it exists is to exercise the syntax, conventions and concepts of the [Rust lang](https://www.rust-lang.org/)
 
 ## Development
 
