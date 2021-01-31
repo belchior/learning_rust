@@ -2,12 +2,12 @@ use crate::Error;
 
 #[derive(Debug, PartialEq)]
 pub enum Kind {
-  Bracket,
-  Digit,
+  Space, // especial
   Dot,
+  Digit,
   Number, // especial
   Operator,
-  Space, // especial
+  Bracket,
 }
 impl Kind {
   fn keys(&self) -> Vec<Key> {
@@ -23,7 +23,7 @@ impl Kind {
   }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub enum Key {
   // Kind::Bracket
   RoundOpen,  // '(',
@@ -32,6 +32,12 @@ pub enum Key {
   BoxClose,   // ']',
   CurlyOpen,  // '{',
   CurlyClose, // '}',
+
+  // Kind::Operator
+  Multiplication, // '*',
+  Division,       // '/',
+  Addition,       // '+',
+  Subtraction,    // '-',
 
   // Kind::Digit
   Zero,  // '0',
@@ -47,12 +53,6 @@ pub enum Key {
 
   // Kind::Dot
   Dot, // '.',
-
-  // Kind::Operator
-  Addition,       // '+',
-  Subtraction,    // '-',
-  Multiplication, // '*',
-  Division,       // '/',
 
   // Kind::Space
   Space, // ' ',
@@ -96,6 +96,10 @@ impl Key {
       Addition | Subtraction | Multiplication | Division => Kind::Operator,
       BoxOpen | BoxClose | CurlyOpen | CurlyClose | RoundOpen | RoundClose => Kind::Bracket,
     }
+  }
+
+  fn precide(key_a: Key, key_b: Key) -> bool {
+    key_a < key_b
   }
 
   fn to_char(&self) -> char {

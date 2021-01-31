@@ -1,4 +1,38 @@
 use super::*;
+use Key::*;
+
+/// describe Key
+
+#[test]
+fn testing_key_precedence() {
+  assert!(
+    Key::precide(RoundOpen, RoundClose),
+    "RoundOpen should precede RoundClose"
+  );
+  assert!(Key::precide(RoundClose, BoxOpen), "RoundClose should precede BoxOpen");
+  assert!(Key::precide(BoxOpen, BoxClose), "BoxOpen should precede BoxClose");
+  assert!(Key::precide(BoxClose, CurlyOpen), "BoxClose should precede CurlyOpen");
+  assert!(
+    Key::precide(CurlyOpen, CurlyClose),
+    "CurlyOpen should precede CurlyClose"
+  );
+  assert!(
+    Key::precide(CurlyClose, Multiplication),
+    "CurlyClose should precede Multiplication"
+  );
+
+  assert!(
+    Key::precide(Multiplication, Division),
+    "Multiplication should precede Division"
+  );
+  assert!(Key::precide(Division, Addition), "Division should precede Addition");
+  assert!(
+    Key::precide(Addition, Subtraction),
+    "Addition should precede Subtraction"
+  );
+}
+
+/// describe Tokenizer
 
 #[test]
 fn testing_tokenize() {
@@ -9,51 +43,51 @@ fn testing_tokenize() {
   let expected_tokens = vec![
     Token {
       kind: Kind::Operator,
-      keys: vec![Key::Subtraction],
+      keys: vec![Subtraction],
     },
     Token {
       kind: Kind::Operator,
-      keys: vec![Key::Multiplication],
+      keys: vec![Multiplication],
     },
     Token {
       kind: Kind::Operator,
-      keys: vec![Key::Division],
+      keys: vec![Division],
     },
     Token {
       kind: Kind::Operator,
-      keys: vec![Key::Addition],
+      keys: vec![Addition],
     },
     Token {
       kind: Kind::Bracket,
-      keys: vec![Key::RoundOpen],
+      keys: vec![RoundOpen],
     },
     Token {
       kind: Kind::Bracket,
-      keys: vec![Key::RoundClose],
+      keys: vec![RoundClose],
     },
     Token {
       kind: Kind::Bracket,
-      keys: vec![Key::BoxOpen],
+      keys: vec![BoxOpen],
     },
     Token {
       kind: Kind::Bracket,
-      keys: vec![Key::BoxClose],
+      keys: vec![BoxClose],
     },
     Token {
       kind: Kind::Bracket,
-      keys: vec![Key::CurlyOpen],
+      keys: vec![CurlyOpen],
     },
     Token {
       kind: Kind::Bracket,
-      keys: vec![Key::CurlyClose],
+      keys: vec![CurlyClose],
     },
     Token {
       kind: Kind::Space,
-      keys: vec![Key::Space, Key::Space],
+      keys: vec![Space, Space],
     },
     Token {
       kind: Kind::Number,
-      keys: vec![Key::One, Key::Dot, Key::Two],
+      keys: vec![One, Dot, Two],
     },
   ];
 
@@ -69,21 +103,21 @@ fn testing_join_spaces() {
   let expected_tokens = vec![
     Token {
       kind: Kind::Space,
-      keys: vec![Key::Space],
+      keys: vec![Space],
     },
     Token {
       kind: Kind::Space,
-      keys: vec![Key::Space],
+      keys: vec![Space],
     },
     Token {
       kind: Kind::Space,
-      keys: vec![Key::Space],
+      keys: vec![Space],
     },
   ];
 
   let expected_tokens_with_joined_space = vec![Token {
     kind: Kind::Space,
-    keys: vec![Key::Space, Key::Space, Key::Space],
+    keys: vec![Space, Space, Space],
   }];
 
   assert_eq!(tokens, expected_tokens);
@@ -99,33 +133,33 @@ fn testing_digits_into_number() {
   let expected_tokens = vec![
     Token {
       kind: Kind::Digit,
-      keys: vec![Key::One],
+      keys: vec![One],
     },
     Token {
       kind: Kind::Digit,
-      keys: vec![Key::Two],
+      keys: vec![Two],
     },
     Token {
       kind: Kind::Digit,
-      keys: vec![Key::Three],
+      keys: vec![Three],
     },
     Token {
       kind: Kind::Dot,
-      keys: vec![Key::Dot],
+      keys: vec![Dot],
     },
     Token {
       kind: Kind::Digit,
-      keys: vec![Key::Four],
+      keys: vec![Four],
     },
     Token {
       kind: Kind::Digit,
-      keys: vec![Key::Five],
+      keys: vec![Five],
     },
   ];
 
   let expected_tokens_number = vec![Token {
     kind: Kind::Number,
-    keys: vec![Key::One, Key::Two, Key::Three, Key::Dot, Key::Four, Key::Five],
+    keys: vec![One, Two, Three, Dot, Four, Five],
   }];
 
   assert_eq!(tokens, expected_tokens);
@@ -160,7 +194,7 @@ fn testing_tokenize_char() {
 
   let expected_token = Token {
     kind: Kind::Operator,
-    keys: vec![Key::Addition],
+    keys: vec![Addition],
   };
 
   assert_eq!(token, expected_token);
@@ -173,7 +207,7 @@ fn testing_tokenize_addition() {
 
   let expected_token = Token {
     kind: Kind::Operator,
-    keys: vec![Key::Addition],
+    keys: vec![Addition],
   };
 
   assert_eq!(token, expected_token);
@@ -186,7 +220,7 @@ fn testing_tokenize_division() {
 
   let expected_token = Token {
     kind: Kind::Operator,
-    keys: vec![Key::Division],
+    keys: vec![Division],
   };
 
   assert_eq!(token, expected_token);
@@ -199,7 +233,7 @@ fn testing_tokenize_multiplication() {
 
   let expected_token = Token {
     kind: Kind::Operator,
-    keys: vec![Key::Multiplication],
+    keys: vec![Multiplication],
   };
 
   assert_eq!(token, expected_token);
@@ -212,7 +246,7 @@ fn testing_tokenize_subtration() {
 
   let expected_token = Token {
     kind: Kind::Operator,
-    keys: vec![Key::Subtraction],
+    keys: vec![Subtraction],
   };
 
   assert_eq!(token, expected_token);
@@ -225,7 +259,7 @@ fn testing_tokenize_box_bracket_open() {
 
   let expected_token = Token {
     kind: Kind::Bracket,
-    keys: vec![Key::BoxOpen],
+    keys: vec![BoxOpen],
   };
 
   assert_eq!(token, expected_token);
@@ -238,7 +272,7 @@ fn testing_tokenize_box_bracket_close() {
 
   let expected_token = Token {
     kind: Kind::Bracket,
-    keys: vec![Key::BoxClose],
+    keys: vec![BoxClose],
   };
 
   assert_eq!(token, expected_token);
@@ -251,7 +285,7 @@ fn testing_tokenize_curly_bracket_open() {
 
   let expected_token = Token {
     kind: Kind::Bracket,
-    keys: vec![Key::CurlyOpen],
+    keys: vec![CurlyOpen],
   };
 
   assert_eq!(token, expected_token);
@@ -264,7 +298,7 @@ fn testing_tokenize_curly_bracket_close() {
 
   let expected_token = Token {
     kind: Kind::Bracket,
-    keys: vec![Key::CurlyClose],
+    keys: vec![CurlyClose],
   };
 
   assert_eq!(token, expected_token);
@@ -277,7 +311,7 @@ fn testing_tokenize_round_bracket_open() {
 
   let expected_token = Token {
     kind: Kind::Bracket,
-    keys: vec![Key::RoundOpen],
+    keys: vec![RoundOpen],
   };
 
   assert_eq!(token, expected_token);
@@ -290,7 +324,7 @@ fn testing_tokenize_round_bracket_close() {
 
   let expected_token = Token {
     kind: Kind::Bracket,
-    keys: vec![Key::RoundClose],
+    keys: vec![RoundClose],
   };
 
   assert_eq!(token, expected_token);
@@ -300,7 +334,7 @@ fn testing_tokenize_round_bracket_close() {
 #[should_panic = "Invalid kind"]
 fn testing_tokenize_bracket() {
   let formula = String::from("(3)");
-  tokenize_bracket(&formula, 2, Key::Multiplication, '(').unwrap();
+  tokenize_bracket(&formula, 2, Multiplication, '(').unwrap();
 }
 
 #[test]
@@ -310,7 +344,7 @@ fn testing_tokenize_space() {
 
   let expected_token = Token {
     kind: Kind::Space,
-    keys: vec![Key::Space],
+    keys: vec![Space],
   };
 
   assert_eq!(token, expected_token);
@@ -323,7 +357,7 @@ fn testing_tokenize_dot() {
 
   let expected_token = Token {
     kind: Kind::Dot,
-    keys: vec![Key::Dot],
+    keys: vec![Dot],
   };
 
   assert_eq!(token, expected_token);
@@ -347,70 +381,70 @@ fn testing_tokenize_decimal_digit() {
     token_zero,
     Token {
       kind: Kind::Digit,
-      keys: vec![Key::Zero],
+      keys: vec![Zero],
     }
   );
   assert_eq!(
     token_one,
     Token {
       kind: Kind::Digit,
-      keys: vec![Key::One],
+      keys: vec![One],
     }
   );
   assert_eq!(
     token_two,
     Token {
       kind: Kind::Digit,
-      keys: vec![Key::Two],
+      keys: vec![Two],
     }
   );
   assert_eq!(
     token_three,
     Token {
       kind: Kind::Digit,
-      keys: vec![Key::Three],
+      keys: vec![Three],
     }
   );
   assert_eq!(
     token_four,
     Token {
       kind: Kind::Digit,
-      keys: vec![Key::Four],
+      keys: vec![Four],
     }
   );
   assert_eq!(
     token_five,
     Token {
       kind: Kind::Digit,
-      keys: vec![Key::Five],
+      keys: vec![Five],
     }
   );
   assert_eq!(
     token_six,
     Token {
       kind: Kind::Digit,
-      keys: vec![Key::Six],
+      keys: vec![Six],
     }
   );
   assert_eq!(
     token_seven,
     Token {
       kind: Kind::Digit,
-      keys: vec![Key::Seven],
+      keys: vec![Seven],
     }
   );
   assert_eq!(
     token_eight,
     Token {
       kind: Kind::Digit,
-      keys: vec![Key::Eight],
+      keys: vec![Eight],
     }
   );
   assert_eq!(
     token_nine,
     Token {
       kind: Kind::Digit,
-      keys: vec![Key::Nine],
+      keys: vec![Nine],
     }
   );
 }
