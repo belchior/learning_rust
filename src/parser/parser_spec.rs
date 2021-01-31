@@ -1,4 +1,5 @@
 use super::*;
+use k9::*;
 use Key::*;
 
 #[test]
@@ -11,9 +12,9 @@ fn should_parse_integer_number() {
     operand_b: Ast::token(Token::new_number(vec![One])),
   };
 
-  let ast = parser(Ok(tokens));
+  let ast = parse(Ok(tokens));
 
-  assert_eq!(ast, Ok(expected_ast));
+  assert_equal!(ast, Ok(expected_ast));
 }
 
 #[test]
@@ -26,9 +27,9 @@ fn should_parse_integer_number_started_with_addition_sign() {
     operand_b: Ast::token(Token::new_number(vec![Two])),
   };
 
-  let ast = parser(Ok(tokens));
+  let ast = parse(Ok(tokens));
 
-  assert_eq!(ast, Ok(expected_ast));
+  assert_equal!(ast, Ok(expected_ast));
 }
 
 #[test]
@@ -41,9 +42,9 @@ fn should_parse_integer_number_started_with_subtraction_sign() {
     operand_b: Ast::token(Token::new_number(vec![Three])),
   };
 
-  let ast = parser(Ok(tokens));
+  let ast = parse(Ok(tokens));
 
-  assert_eq!(ast, Ok(expected_ast));
+  assert_equal!(ast, Ok(expected_ast));
 }
 
 #[test]
@@ -56,9 +57,9 @@ fn should_parse_floating_point_number() {
     operand_b: Ast::token(Token::new_number(vec![One, Dot, Five])),
   };
 
-  let ast = parser(Ok(tokens));
+  let ast = parse(Ok(tokens));
 
-  assert_eq!(ast, Ok(expected_ast));
+  assert_equal!(ast, Ok(expected_ast));
 }
 
 #[test]
@@ -71,9 +72,9 @@ fn should_parse_floating_point_number_started_with_addition_sign() {
     operand_b: Ast::token(Token::new_number(vec![Zero, Dot, Five])),
   };
 
-  let ast = parser(Ok(tokens));
+  let ast = parse(Ok(tokens));
 
-  assert_eq!(ast, Ok(expected_ast));
+  assert_equal!(ast, Ok(expected_ast));
 }
 
 #[test]
@@ -89,9 +90,9 @@ fn should_parse_floating_point_number_started_with_subtration_sign() {
     operand_b: Ast::token(Token::new_number(vec![Zero, Dot, Five])),
   };
 
-  let ast = parser(Ok(tokens));
+  let ast = parse(Ok(tokens));
 
-  assert_eq!(ast, Ok(expected_ast));
+  assert_equal!(ast, Ok(expected_ast));
 }
 
 #[test]
@@ -108,9 +109,9 @@ fn should_parse_addition_expression() {
     operand_b: Ast::token(Token::new_number(vec![One])),
   };
 
-  let ast = parser(Ok(tokens));
+  let ast = parse(Ok(tokens));
 
-  assert_eq!(ast, Ok(expected_ast));
+  assert_equal!(ast, Ok(expected_ast));
 }
 
 #[test]
@@ -127,9 +128,9 @@ fn should_parse_subtraction_expression() {
     operand_b: Ast::token(Token::new_number(vec![Two])),
   };
 
-  let ast = parser(Ok(tokens));
+  let ast = parse(Ok(tokens));
 
-  assert_eq!(ast, Ok(expected_ast));
+  assert_equal!(ast, Ok(expected_ast));
 }
 
 #[test]
@@ -146,9 +147,9 @@ fn should_parse_division_expression() {
     operand_b: Ast::token(Token::new_number(vec![Three])),
   };
 
-  let ast = parser(Ok(tokens));
+  let ast = parse(Ok(tokens));
 
-  assert_eq!(ast, Ok(expected_ast));
+  assert_equal!(ast, Ok(expected_ast));
 }
 
 #[test]
@@ -165,9 +166,48 @@ fn should_parse_multiplication_expression() {
     operand_b: Ast::token(Token::new_number(vec![Four])),
   };
 
-  let ast = parser(Ok(tokens));
+  let ast = parse(Ok(tokens));
 
-  assert_eq!(ast, Ok(expected_ast));
+  assert_equal!(ast, Ok(expected_ast));
+}
+
+#[test]
+fn should_parse_multi_operation_expression() {
+  // formula = 1+2-3*4/6
+
+  let tokens = vec![
+    Token::new_number(vec![One]),
+    Token::new_operator(Addition),
+    Token::new_number(vec![Two]),
+    Token::new_operator(Subtraction),
+    Token::new_number(vec![Three]),
+    Token::new_operator(Multiplication),
+    Token::new_number(vec![Four]),
+    Token::new_operator(Division),
+    Token::new_number(vec![Six]),
+  ];
+
+  let expected_ast = Ast {
+    operator: Ast::operator(Token::new_operator(Subtraction)),
+    operand_a: Ast::ast(Ast {
+      operator: Ast::operator(Token::new_operator(Addition)),
+      operand_a: Ast::token(Token::new_number(vec![One])),
+      operand_b: Ast::token(Token::new_number(vec![Two])),
+    }),
+    operand_b: Ast::ast(Ast {
+      operator: Ast::operator(Token::new_operator(Division)),
+      operand_a: Ast::ast(Ast {
+        operator: Ast::operator(Token::new_operator(Multiplication)),
+        operand_a: Ast::token(Token::new_number(vec![Three])),
+        operand_b: Ast::token(Token::new_number(vec![Four])),
+      }),
+      operand_b: Ast::token(Token::new_number(vec![Six])),
+    }),
+  };
+
+  let ast = parse(Ok(tokens));
+
+  assert_equal!(ast, Ok(expected_ast));
 }
 
 #[test]
@@ -187,5 +227,5 @@ fn testing_remove_space() {
   ];
 
   let tokens_without_space = remove_space(tokens);
-  assert_eq!(tokens_without_space, expected_tokens);
+  assert_equal!(tokens_without_space, expected_tokens);
 }

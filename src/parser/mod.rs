@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use crate::tokenizer::{Key, Kind, Token};
 use crate::Error;
 
@@ -10,7 +8,7 @@ enum Node {
 }
 
 #[derive(Debug, PartialEq)]
-struct Ast {
+pub struct Ast {
   operator: Option<Token>,
   operand_a: Option<Node>,
   operand_b: Option<Node>,
@@ -49,7 +47,7 @@ impl Ast {
   }
 }
 
-fn parser(tokens: Result<Vec<Token>, Error>) -> Result<Ast, Error> {
+pub fn parse(tokens: Result<Vec<Token>, Error>) -> Result<Ast, Error> {
   let tokens = remove_space(tokens?);
   if tokens.len() == 0 {
     return Err(Error::InvalidExpression);
@@ -108,13 +106,53 @@ fn start_with_sign(tokens: &Vec<Token>) -> bool {
 }
 
 fn resolve_operator(mut tokens: Vec<Token>, mut ast: Ast) -> Result<Ast, Error> {
-  match ast.operator {
-    None => {
-      let token = tokens.remove(0);
-      ast.operator = Ast::operator(token);
-      to_ast(Ok(tokens), ast)
-    }
-    Some(_) => panic!("Operador já existe"),
+  let token = tokens.remove(0);
+  if token.kind != Kind::Operator {
+    return Err(Error::InvalidTokenSequence);
+  }
+
+  if ast.operator == None {
+    ast.operator = Ast::operator(token);
+    return to_ast(Ok(tokens), ast);
+  }
+
+  let Ast {
+    operator,
+    operand_a,
+    operand_b,
+  } = ast;
+  let operator = operator.unwrap();
+  let curr_operator = &token.keys[0];
+  let prev_operator = &operator.keys[0];
+
+  if Key::precede(curr_operator, prev_operator) {
+    let node_ast = Ast {
+      operator: Ast::operator(token),
+      operand_a: operand_b,
+      operand_b: Ast::empty(),
+    };
+    let operand_b = to_ast(Ok(tokens), node_ast)?;
+
+    let new_ast = Ast {
+      operator: Ast::operator(operator),
+      operand_a: operand_a,
+      operand_b: Ast::ast(operand_b),
+    };
+
+    Ok(new_ast)
+  } else {
+    let operand_a = Ast {
+      operator: Ast::operator(operator),
+      operand_a,
+      operand_b,
+    };
+    let new_ast = Ast {
+      operator: Ast::operator(token),
+      operand_a: Ast::ast(operand_a),
+      operand_b: Ast::empty(),
+    };
+
+    to_ast(Ok(tokens), new_ast)
   }
 }
 
@@ -138,9 +176,7 @@ fn resolve_number(mut tokens: Vec<Token>, mut ast: Ast) -> Result<Ast, Error> {
       ast.operand_b = Ast::token(token);
       to_ast(Ok(tokens), ast)
     }
-    _ => {
-      panic!("Ast cheia")
-    }
+    _ => Err(Error::InvalidTokenSequence),
   }
 }
 

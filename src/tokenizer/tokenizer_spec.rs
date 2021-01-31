@@ -6,28 +6,28 @@ use Key::*;
 #[test]
 fn testing_key_precedence() {
   assert!(
-    Key::precide(RoundOpen, RoundClose),
+    Key::precede(&RoundOpen, &RoundClose),
     "RoundOpen should precede RoundClose"
   );
-  assert!(Key::precide(RoundClose, BoxOpen), "RoundClose should precede BoxOpen");
-  assert!(Key::precide(BoxOpen, BoxClose), "BoxOpen should precede BoxClose");
-  assert!(Key::precide(BoxClose, CurlyOpen), "BoxClose should precede CurlyOpen");
+  assert!(Key::precede(&RoundClose, &BoxOpen), "RoundClose should precede BoxOpen");
+  assert!(Key::precede(&BoxOpen, &BoxClose), "BoxOpen should precede BoxClose");
+  assert!(Key::precede(&BoxClose, &CurlyOpen), "BoxClose should precede CurlyOpen");
   assert!(
-    Key::precide(CurlyOpen, CurlyClose),
+    Key::precede(&CurlyOpen, &CurlyClose),
     "CurlyOpen should precede CurlyClose"
   );
   assert!(
-    Key::precide(CurlyClose, Multiplication),
+    Key::precede(&CurlyClose, &Multiplication),
     "CurlyClose should precede Multiplication"
   );
 
   assert!(
-    Key::precide(Multiplication, Division),
+    Key::precede(&Multiplication, &Division),
     "Multiplication should precede Division"
   );
-  assert!(Key::precide(Division, Addition), "Division should precede Addition");
+  assert!(Key::precede(&Division, &Addition), "Division should precede Addition");
   assert!(
-    Key::precide(Addition, Subtraction),
+    Key::precede(&Addition, &Subtraction),
     "Addition should precede Subtraction"
   );
 }

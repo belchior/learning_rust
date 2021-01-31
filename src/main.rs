@@ -20,7 +20,7 @@ fn main() {
 struct Calc;
 
 impl Calc {
-  fn calculate(formula: String) -> Result<Vec<tokenizer::Token>, Error> {
-    tokenizer::tokenize(formula)
+  fn calculate(formula: String) -> Result<parser::Ast, Error> {
+    parser::parse(tokenizer::tokenize(formula))
   }
 }

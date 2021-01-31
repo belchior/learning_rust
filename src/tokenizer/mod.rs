@@ -2,22 +2,22 @@ use crate::Error;
 
 #[derive(Debug, PartialEq)]
 pub enum Kind {
-  Space, // especial
-  Dot,
-  Digit,
-  Number, // especial
-  Operator,
   Bracket,
+  Operator,
+  Number,
+  Digit,
+  Dot,
+  Space,
 }
 impl Kind {
   fn keys(&self) -> Vec<Key> {
     use Key::*;
     match *self {
       Kind::Bracket => vec![RoundOpen, RoundClose, BoxOpen, BoxClose, CurlyOpen, CurlyClose],
+      Kind::Operator => vec![Addition, Subtraction, Multiplication, Division],
+      Kind::Number => vec![Dot, Zero, One, Two, Three, Four, Five, Six, Seven, Eight, Nine],
       Kind::Digit => vec![Zero, One, Two, Three, Four, Five, Six, Seven, Eight, Nine],
       Kind::Dot => vec![Dot],
-      Kind::Number => vec![Dot, Zero, One, Two, Three, Four, Five, Six, Seven, Eight, Nine],
-      Kind::Operator => vec![Addition, Subtraction, Multiplication, Division],
       Kind::Space => vec![Space],
     }
   }
@@ -67,6 +67,10 @@ impl Key {
       ']' => BoxClose,
       '{' => CurlyOpen,
       '}' => CurlyClose,
+      '*' => Multiplication,
+      '/' => Division,
+      '+' => Addition,
+      '-' => Subtraction,
       '0' => Zero,
       '1' => One,
       '2' => Two,
@@ -78,10 +82,6 @@ impl Key {
       '8' => Eight,
       '9' => Nine,
       '.' => Dot,
-      '+' => Addition,
-      '-' => Subtraction,
-      '*' => Multiplication,
-      '/' => Division,
       ' ' => Space,
       _ => panic!(format!("Undefined char: {}", char_value)),
     }
@@ -90,16 +90,16 @@ impl Key {
   fn kind(&self) -> Kind {
     use Key::*;
     match *self {
-      Space => Kind::Space,
-      Dot => Kind::Dot,
-      Zero | One | Two | Three | Four | Five | Six | Seven | Eight | Nine => Kind::Digit,
-      Addition | Subtraction | Multiplication | Division => Kind::Operator,
       BoxOpen | BoxClose | CurlyOpen | CurlyClose | RoundOpen | RoundClose => Kind::Bracket,
+      Addition | Subtraction | Multiplication | Division => Kind::Operator,
+      Zero | One | Two | Three | Four | Five | Six | Seven | Eight | Nine => Kind::Digit,
+      Dot => Kind::Dot,
+      Space => Kind::Space,
     }
   }
 
-  fn precide(key_a: Key, key_b: Key) -> bool {
-    key_a < key_b
+  pub fn precede(key_a: &Key, key_b: &Key) -> bool {
+    key_a <= key_b
   }
 
   fn to_char(&self) -> char {
@@ -111,6 +111,10 @@ impl Key {
       BoxClose => ']',
       CurlyOpen => '{',
       CurlyClose => '}',
+      Multiplication => '*',
+      Division => '/',
+      Addition => '+',
+      Subtraction => '-',
       Zero => '0',
       One => '1',
       Two => '2',
@@ -122,10 +126,6 @@ impl Key {
       Eight => '8',
       Nine => '9',
       Dot => '.',
-      Addition => '+',
-      Subtraction => '-',
-      Multiplication => '*',
-      Division => '/',
       Space => ' ',
     }
   }
