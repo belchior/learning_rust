@@ -1,6 +1,9 @@
 #[derive(Debug, PartialEq)]
 pub enum Error {
-  UndefinedSymbol(String),
+  DivisionByZero,
   InvalidExpression,
   InvalidTokenSequence,
+  TokenNaN,
+  TokenNaO,
+  UndefinedSymbol(String),
 }

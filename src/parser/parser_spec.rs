@@ -1,5 +1,5 @@
 use super::*;
-use k9::assert_equal;
+use pretty_assertions::assert_eq;
 use Key::*;
 
 #[test]
@@ -14,7 +14,7 @@ fn should_parse_integer_number() {
 
   let ast = parse(Ok(tokens));
 
-  assert_equal!(ast, Ok(expected_ast));
+  assert_eq!(ast, Ok(expected_ast));
 }
 
 #[test]
@@ -29,7 +29,7 @@ fn should_parse_integer_number_started_with_addition_sign() {
 
   let ast = parse(Ok(tokens));
 
-  assert_equal!(ast, Ok(expected_ast));
+  assert_eq!(ast, Ok(expected_ast));
 }
 
 #[test]
@@ -44,7 +44,7 @@ fn should_parse_integer_number_started_with_subtraction_sign() {
 
   let ast = parse(Ok(tokens));
 
-  assert_equal!(ast, Ok(expected_ast));
+  assert_eq!(ast, Ok(expected_ast));
 }
 
 #[test]
@@ -59,7 +59,7 @@ fn should_parse_floating_point_number() {
 
   let ast = parse(Ok(tokens));
 
-  assert_equal!(ast, Ok(expected_ast));
+  assert_eq!(ast, Ok(expected_ast));
 }
 
 #[test]
@@ -74,7 +74,7 @@ fn should_parse_floating_point_number_started_with_addition_sign() {
 
   let ast = parse(Ok(tokens));
 
-  assert_equal!(ast, Ok(expected_ast));
+  assert_eq!(ast, Ok(expected_ast));
 }
 
 #[test]
@@ -92,7 +92,7 @@ fn should_parse_floating_point_number_started_with_subtration_sign() {
 
   let ast = parse(Ok(tokens));
 
-  assert_equal!(ast, Ok(expected_ast));
+  assert_eq!(ast, Ok(expected_ast));
 }
 
 #[test]
@@ -111,7 +111,7 @@ fn should_parse_addition_expression() {
 
   let ast = parse(Ok(tokens));
 
-  assert_equal!(ast, Ok(expected_ast));
+  assert_eq!(ast, Ok(expected_ast));
 }
 
 #[test]
@@ -130,7 +130,7 @@ fn should_parse_subtraction_expression() {
 
   let ast = parse(Ok(tokens));
 
-  assert_equal!(ast, Ok(expected_ast));
+  assert_eq!(ast, Ok(expected_ast));
 }
 
 #[test]
@@ -149,7 +149,7 @@ fn should_parse_division_expression() {
 
   let ast = parse(Ok(tokens));
 
-  assert_equal!(ast, Ok(expected_ast));
+  assert_eq!(ast, Ok(expected_ast));
 }
 
 #[test]
@@ -168,7 +168,7 @@ fn should_parse_multiplication_expression() {
 
   let ast = parse(Ok(tokens));
 
-  assert_equal!(ast, Ok(expected_ast));
+  assert_eq!(ast, Ok(expected_ast));
 }
 
 #[test]
@@ -207,7 +207,7 @@ fn should_parse_multi_operation_expression() {
 
   let ast = parse(Ok(tokens));
 
-  assert_equal!(ast, Ok(expected_ast));
+  assert_eq!(ast, Ok(expected_ast));
 }
 
 #[test]
@@ -227,5 +227,5 @@ fn testing_remove_space() {
   ];
 
   let tokens_without_space = remove_space(tokens);
-  assert_equal!(tokens_without_space, expected_tokens);
+  assert_eq!(tokens_without_space, expected_tokens);
 }

@@ -130,7 +130,7 @@ impl Key {
     }
   }
 
-  fn to_string(&self) -> String {
+  pub fn to_string(&self) -> String {
     self.to_char().to_string()
   }
 }
