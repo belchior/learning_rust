@@ -1,10 +1,11 @@
 [package]
 name = "rust_calc"
 version = "0.1.0"
-authors = ["Belchior Oliveira <belchior.oliveira@omegaenergia.com.br>"]
+authors = ["Belchior Oliveira <belchior@outlook.com>"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[dependencies]
-k9 = "0.10.3"
+[dev-dependencies]
+cargo-watch = "7.5.0"
+pretty_assertions = "0.6.1"
