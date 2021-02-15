@@ -2,6 +2,7 @@
 pub enum Error {
   DivisionByZero,
   InvalidExpression,
+  InvalidOperand,
   InvalidTokenSequence,
   TokenNaN,
   TokenNaO,

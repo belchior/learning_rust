@@ -209,7 +209,7 @@ impl Token {
     }
   }
 
-  fn to_string(&self) -> String {
+  pub fn to_string(&self) -> String {
     self.keys.iter().fold("".to_string(), |mut acc, key| {
       acc.push_str(&key.to_string());
       acc

@@ -9,9 +9,9 @@ pub enum Node {
 
 #[derive(Debug, PartialEq)]
 pub struct Ast {
-  operator: Option<Token>,
-  operand_a: Option<Node>,
-  operand_b: Option<Node>,
+  pub operator: Option<Token>,
+  pub operand_a: Option<Node>,
+  pub operand_b: Option<Node>,
 }
 impl Ast {
   pub fn new(operator: Option<Token>, operand_a: Option<Node>, operand_b: Option<Node>) -> Ast {

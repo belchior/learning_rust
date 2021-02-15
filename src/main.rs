@@ -11,8 +11,8 @@ fn main() {
 
   match formula {
     Some(formula) => {
-      let token_list = Calc::calculate(formula);
-      println!("{:?}", token_list);
+      let result = Calc::calculate(formula).unwrap();
+      println!("{}", result);
     }
     None => eprintln!("Error: Formula is required\nUse: calc '1+2-3*4/5'"),
   }
@@ -21,7 +21,7 @@ fn main() {
 struct Calc;
 
 impl Calc {
-  fn calculate(formula: String) -> Result<parser::Ast, Error> {
-    parser::parse(tokenizer::tokenize(formula))
+  fn calculate(formula: String) -> Result<String, Error> {
+    interpreter::run(formula)
   }
 }
