@@ -36,22 +36,22 @@ impl Ast {
     }
   }
 
-  fn ast(ast: Ast) -> Option<Node> {
+  fn node_ast(ast: Ast) -> Option<Node> {
     Some(Node::Ast(Box::new(ast)))
   }
-  fn token(token: Token) -> Option<Node> {
+  fn node_token(token: Token) -> Option<Node> {
     match token.kind {
       Kind::Number => Some(Node::Token(token)),
       _ => None,
     }
   }
-  fn operator(token: Token) -> Option<Token> {
+  fn node_operator(token: Token) -> Option<Token> {
     match token.kind {
       Kind::Operator => Some(token),
       _ => None,
     }
   }
-  fn empty() -> Option<Node> {
+  fn node_empty() -> Option<Node> {
     Option::None
   }
   fn is_empty(&self) -> bool {
@@ -82,9 +82,9 @@ fn to_ast(tokens: Result<Vec<Token>, Error>, ast: Ast) -> Result<Ast, Error> {
 
     return match token.kind {
       Kind::Number => Ok(Ast {
-        operator: Ast::operator(Token::new_operator(Key::Addition)),
-        operand_a: Ast::token(Token::new_number(vec![Key::Zero])),
-        operand_b: Ast::token(token),
+        operator: Ast::new_operator(Key::Addition),
+        operand_a: Ast::new_number(vec![Key::Zero]),
+        operand_b: Ast::node_token(token),
       }),
       _ => Err(Error::InvalidExpression),
     };
@@ -124,7 +124,7 @@ fn resolve_operator(mut tokens: Vec<Token>, mut ast: Ast) -> Result<Ast, Error> 
   }
 
   if ast.operator == None {
-    ast.operator = Ast::operator(token);
+    ast.operator = Ast::node_operator(token);
     return to_ast(Ok(tokens), ast);
   }
 
@@ -139,29 +139,29 @@ fn resolve_operator(mut tokens: Vec<Token>, mut ast: Ast) -> Result<Ast, Error> 
 
   if Key::precede(curr_operator, prev_operator) {
     let node_ast = Ast {
-      operator: Ast::operator(token),
+      operator: Ast::node_operator(token),
       operand_a: operand_b,
-      operand_b: Ast::empty(),
+      operand_b: Ast::node_empty(),
     };
     let operand_b = to_ast(Ok(tokens), node_ast)?;
 
     let new_ast = Ast {
-      operator: Ast::operator(operator),
+      operator: Ast::node_operator(operator),
       operand_a: operand_a,
-      operand_b: Ast::ast(operand_b),
+      operand_b: Ast::node_ast(operand_b),
     };
 
     Ok(new_ast)
   } else {
     let operand_a = Ast {
-      operator: Ast::operator(operator),
+      operator: Ast::node_operator(operator),
       operand_a,
       operand_b,
     };
     let new_ast = Ast {
-      operator: Ast::operator(token),
-      operand_a: Ast::ast(operand_a),
-      operand_b: Ast::empty(),
+      operator: Ast::node_operator(token),
+      operand_a: Ast::node_ast(operand_a),
+      operand_b: Ast::node_empty(),
     };
 
     to_ast(Ok(tokens), new_ast)
@@ -176,7 +176,7 @@ fn resolve_number(mut tokens: Vec<Token>, mut ast: Ast) -> Result<Ast, Error> {
       operand_b: None,
     } => {
       let token = tokens.remove(0);
-      ast.operand_a = Ast::token(token);
+      ast.operand_a = Ast::node_token(token);
       to_ast(Ok(tokens), ast)
     }
     Ast {
@@ -185,7 +185,7 @@ fn resolve_number(mut tokens: Vec<Token>, mut ast: Ast) -> Result<Ast, Error> {
       operand_b: None,
     } => {
       let token = tokens.remove(0);
-      ast.operand_b = Ast::token(token);
+      ast.operand_b = Ast::node_token(token);
       to_ast(Ok(tokens), ast)
     }
     _ => Err(Error::InvalidTokenSequence),

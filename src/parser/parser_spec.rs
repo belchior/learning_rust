@@ -6,11 +6,11 @@ use Key::*;
 fn should_parse_integer_number() {
   let tokens = vec![Token::new_number(vec![One])];
 
-  let expected_ast = Ast {
-    operator: Ast::operator(Token::new_operator(Addition)),
-    operand_a: Ast::token(Token::new_number(vec![Zero])),
-    operand_b: Ast::token(Token::new_number(vec![One])),
-  };
+  let expected_ast = Ast::new(
+    Ast::new_operator(Addition),
+    Ast::new_number(vec![Zero]),
+    Ast::new_number(vec![One]),
+  );
 
   let ast = parse(Ok(tokens));
 
@@ -21,11 +21,11 @@ fn should_parse_integer_number() {
 fn should_parse_integer_number_started_with_addition_sign() {
   let tokens = vec![Token::new_operator(Addition), Token::new_number(vec![Two])];
 
-  let expected_ast = Ast {
-    operator: Ast::operator(Token::new_operator(Addition)),
-    operand_a: Ast::token(Token::new_number(vec![Zero])),
-    operand_b: Ast::token(Token::new_number(vec![Two])),
-  };
+  let expected_ast = Ast::new(
+    Ast::new_operator(Addition),
+    Ast::new_number(vec![Zero]),
+    Ast::new_number(vec![Two]),
+  );
 
   let ast = parse(Ok(tokens));
 
@@ -36,11 +36,11 @@ fn should_parse_integer_number_started_with_addition_sign() {
 fn should_parse_integer_number_started_with_subtraction_sign() {
   let tokens = vec![Token::new_operator(Subtraction), Token::new_number(vec![Three])];
 
-  let expected_ast = Ast {
-    operator: Ast::operator(Token::new_operator(Subtraction)),
-    operand_a: Ast::token(Token::new_number(vec![Zero])),
-    operand_b: Ast::token(Token::new_number(vec![Three])),
-  };
+  let expected_ast = Ast::new(
+    Ast::new_operator(Subtraction),
+    Ast::new_number(vec![Zero]),
+    Ast::new_number(vec![Three]),
+  );
 
   let ast = parse(Ok(tokens));
 
@@ -51,11 +51,11 @@ fn should_parse_integer_number_started_with_subtraction_sign() {
 fn should_parse_floating_point_number() {
   let tokens = vec![Token::new_number(vec![One, Dot, Five])];
 
-  let expected_ast = Ast {
-    operator: Ast::operator(Token::new_operator(Addition)),
-    operand_a: Ast::token(Token::new_number(vec![Zero])),
-    operand_b: Ast::token(Token::new_number(vec![One, Dot, Five])),
-  };
+  let expected_ast = Ast::new(
+    Ast::new_operator(Addition),
+    Ast::new_number(vec![Zero]),
+    Ast::new_number(vec![One, Dot, Five]),
+  );
 
   let ast = parse(Ok(tokens));
 
@@ -66,11 +66,11 @@ fn should_parse_floating_point_number() {
 fn should_parse_floating_point_number_started_with_addition_sign() {
   let tokens = vec![Token::new_operator(Addition), Token::new_number(vec![Zero, Dot, Five])];
 
-  let expected_ast = Ast {
-    operator: Ast::operator(Token::new_operator(Addition)),
-    operand_a: Ast::token(Token::new_number(vec![Zero])),
-    operand_b: Ast::token(Token::new_number(vec![Zero, Dot, Five])),
-  };
+  let expected_ast = Ast::new(
+    Ast::new_operator(Addition),
+    Ast::new_number(vec![Zero]),
+    Ast::new_number(vec![Zero, Dot, Five]),
+  );
 
   let ast = parse(Ok(tokens));
 
@@ -84,11 +84,11 @@ fn should_parse_floating_point_number_started_with_subtration_sign() {
     Token::new_number(vec![Zero, Dot, Five]),
   ];
 
-  let expected_ast = Ast {
-    operator: Ast::operator(Token::new_operator(Subtraction)),
-    operand_a: Ast::token(Token::new_number(vec![Zero])),
-    operand_b: Ast::token(Token::new_number(vec![Zero, Dot, Five])),
-  };
+  let expected_ast = Ast::new(
+    Ast::new_operator(Subtraction),
+    Ast::new_number(vec![Zero]),
+    Ast::new_number(vec![Zero, Dot, Five]),
+  );
 
   let ast = parse(Ok(tokens));
 
@@ -103,11 +103,11 @@ fn should_parse_addition_expression() {
     Token::new_number(vec![One]),
   ];
 
-  let expected_ast = Ast {
-    operator: Ast::operator(Token::new_operator(Addition)),
-    operand_a: Ast::token(Token::new_number(vec![One])),
-    operand_b: Ast::token(Token::new_number(vec![One])),
-  };
+  let expected_ast = Ast::new(
+    Ast::new_operator(Addition),
+    Ast::new_number(vec![One]),
+    Ast::new_number(vec![One]),
+  );
 
   let ast = parse(Ok(tokens));
 
@@ -122,11 +122,11 @@ fn should_parse_subtraction_expression() {
     Token::new_number(vec![Two]),
   ];
 
-  let expected_ast = Ast {
-    operator: Ast::operator(Token::new_operator(Subtraction)),
-    operand_a: Ast::token(Token::new_number(vec![Two])),
-    operand_b: Ast::token(Token::new_number(vec![Two])),
-  };
+  let expected_ast = Ast::new(
+    Ast::new_operator(Subtraction),
+    Ast::new_number(vec![Two]),
+    Ast::new_number(vec![Two]),
+  );
 
   let ast = parse(Ok(tokens));
 
@@ -141,11 +141,11 @@ fn should_parse_division_expression() {
     Token::new_number(vec![Three]),
   ];
 
-  let expected_ast = Ast {
-    operator: Ast::operator(Token::new_operator(Division)),
-    operand_a: Ast::token(Token::new_number(vec![Three])),
-    operand_b: Ast::token(Token::new_number(vec![Three])),
-  };
+  let expected_ast = Ast::new(
+    Ast::new_operator(Division),
+    Ast::new_number(vec![Three]),
+    Ast::new_number(vec![Three]),
+  );
 
   let ast = parse(Ok(tokens));
 
@@ -160,11 +160,11 @@ fn should_parse_multiplication_expression() {
     Token::new_number(vec![Four]),
   ];
 
-  let expected_ast = Ast {
-    operator: Ast::operator(Token::new_operator(Multiplication)),
-    operand_a: Ast::token(Token::new_number(vec![Four])),
-    operand_b: Ast::token(Token::new_number(vec![Four])),
-  };
+  let expected_ast = Ast::new(
+    Ast::new_operator(Multiplication),
+    Ast::new_number(vec![Four]),
+    Ast::new_number(vec![Four]),
+  );
 
   let ast = parse(Ok(tokens));
 
@@ -187,23 +187,23 @@ fn should_parse_multi_operation_expression() {
     Token::new_number(vec![Six]),
   ];
 
-  let expected_ast = Ast {
-    operator: Ast::operator(Token::new_operator(Subtraction)),
-    operand_a: Ast::ast(Ast {
-      operator: Ast::operator(Token::new_operator(Addition)),
-      operand_a: Ast::token(Token::new_number(vec![One])),
-      operand_b: Ast::token(Token::new_number(vec![Two])),
-    }),
-    operand_b: Ast::ast(Ast {
-      operator: Ast::operator(Token::new_operator(Division)),
-      operand_a: Ast::ast(Ast {
-        operator: Ast::operator(Token::new_operator(Multiplication)),
-        operand_a: Ast::token(Token::new_number(vec![Three])),
-        operand_b: Ast::token(Token::new_number(vec![Four])),
-      }),
-      operand_b: Ast::token(Token::new_number(vec![Six])),
-    }),
-  };
+  let expected_ast = Ast::new(
+    Ast::new_operator(Subtraction),
+    Ast::node_ast(Ast::new(
+      Ast::new_operator(Addition),
+      Ast::new_number(vec![One]),
+      Ast::new_number(vec![Two]),
+    )),
+    Ast::node_ast(Ast::new(
+      Ast::new_operator(Division),
+      Ast::node_ast(Ast::new(
+        Ast::new_operator(Multiplication),
+        Ast::new_number(vec![Three]),
+        Ast::new_number(vec![Four]),
+      )),
+      Ast::new_number(vec![Six]),
+    )),
+  );
 
   let ast = parse(Ok(tokens));
 
