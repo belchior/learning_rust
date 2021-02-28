@@ -29,7 +29,8 @@ cargo +nightly cov -- show \
     --output-dir=./target/debug \
     --format=html;
 
-echo "\n\nAll files can be found at $(pwd)/target/debug/coverage/src/main.rs.html\n\n";
+echo "\n\nAll files can be found at /target/debug/coverage/src/<Filename>.html";
+echo "\nExample: $(pwd)/target/debug/coverage/src/main.rs.html\n\n";
 
 # Reference
 # https://doc.rust-lang.org/nightly/unstable-book/compiler-flags/source-based-code-coverage.html
