@@ -1,6 +1,6 @@
 use crate::Error;
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Kind {
   Bracket,
   Operator,
@@ -135,17 +135,24 @@ impl Key {
   }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Token {
   pub kind: Kind,
   pub keys: Vec<Key>,
 }
 impl Token {
-  fn new(kind: Kind, key: Key) -> Token {
+  pub fn new(kind: Kind, key: Key) -> Token {
     if key.kind() != kind {
       panic!("Invalid token arguments");
     }
     Token { kind, keys: vec![key] }
+  }
+
+  pub fn new_bracket(key: Key) -> Token {
+    if key.kind() != Kind::Bracket {
+      panic!("Invalid token arguments")
+    }
+    Self::new(Kind::Bracket, key)
   }
 
   pub fn new_number(keys: Vec<Key>) -> Token {

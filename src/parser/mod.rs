@@ -62,7 +62,7 @@ impl Ast {
 pub fn parse(tokens: Result<Vec<Token>, Error>) -> Result<Ast, Error> {
   let tokens = remove_space(tokens?);
   if tokens.len() == 0 {
-    return Err(Error::InvalidExpression);
+    return Err(Error::InvalidExpression("Input is empty".to_string()));
   }
   let ast = Ast::new(None, None, None);
 
@@ -86,7 +86,9 @@ fn to_ast(tokens: Result<Vec<Token>, Error>, ast: Ast) -> Result<Ast, Error> {
         operand_a: Ast::new_number(vec![Key::Zero]),
         operand_b: Ast::node_token(token),
       }),
-      _ => Err(Error::InvalidExpression),
+      _ => Err(Error::InvalidExpression(
+        "Bad format: Unique value should be a number".to_string(),
+      )),
     };
   }
 
@@ -99,8 +101,9 @@ fn to_ast(tokens: Result<Vec<Token>, Error>, ast: Ast) -> Result<Ast, Error> {
   let token = tokens.first().unwrap();
 
   match token.kind {
-    Kind::Operator => resolve_operator(tokens, ast),
+    Kind::Bracket => resolve_brackets(tokens, ast),
     Kind::Number => resolve_number(tokens, ast),
+    Kind::Operator => resolve_operator(tokens, ast),
     _ => Err(Error::InvalidTokenSequence),
   }
 }
@@ -115,6 +118,65 @@ fn start_with_sign(tokens: &Vec<Token>) -> bool {
   }
   let key = &tokens[0].keys[0];
   *key == Key::Addition || *key == Key::Subtraction
+}
+
+fn resolve_brackets(tokens: Vec<Token>, mut ast: Ast) -> Result<Ast, Error> {
+  let bracket_expr = bracket_expression(tokens.clone())?;
+  let rest_expression = tokens[bracket_expr.len()..].to_vec();
+  let expression = remove_border_bracket(bracket_expr);
+  let ast_expression = to_ast(Ok(expression), Ast::new(None, None, None))?;
+
+  if rest_expression == [] && ast.is_empty() {
+    return Ok(ast_expression);
+  }
+
+  match ast {
+    Ast {
+      operand_a: None,
+      operand_b: None,
+      ..
+    } => ast.operand_a = Ast::node_ast(ast_expression),
+    Ast {
+      operand_a: Some(_),
+      operand_b: None,
+      ..
+    } => ast.operand_b = Ast::node_ast(ast_expression),
+    _ => {
+      return Err(Error::InvalidExpression(
+        "Bad format: There is no operator associated with this expression".to_string(),
+      ))
+    }
+  }
+
+  if rest_expression == [] {
+    return Ok(ast);
+  }
+
+  to_ast(Ok(rest_expression), ast)
+}
+
+fn resolve_number(mut tokens: Vec<Token>, mut ast: Ast) -> Result<Ast, Error> {
+  match ast {
+    Ast {
+      operand_a: None,
+      operand_b: None,
+      ..
+    } => {
+      let token = tokens.remove(0);
+      ast.operand_a = Ast::node_token(token);
+      to_ast(Ok(tokens), ast)
+    }
+    Ast {
+      operand_a: Some(_),
+      operand_b: None,
+      ..
+    } => {
+      let token = tokens.remove(0);
+      ast.operand_b = Ast::node_token(token);
+      to_ast(Ok(tokens), ast)
+    }
+    _ => Err(Error::InvalidTokenSequence),
+  }
 }
 
 fn resolve_operator(mut tokens: Vec<Token>, mut ast: Ast) -> Result<Ast, Error> {
@@ -168,28 +230,46 @@ fn resolve_operator(mut tokens: Vec<Token>, mut ast: Ast) -> Result<Ast, Error> 
   }
 }
 
-fn resolve_number(mut tokens: Vec<Token>, mut ast: Ast) -> Result<Ast, Error> {
-  match ast {
-    Ast {
-      operator: _,
-      operand_a: None,
-      operand_b: None,
-    } => {
-      let token = tokens.remove(0);
-      ast.operand_a = Ast::node_token(token);
-      to_ast(Ok(tokens), ast)
-    }
-    Ast {
-      operator: _,
-      operand_a: Some(_),
-      operand_b: None,
-    } => {
-      let token = tokens.remove(0);
-      ast.operand_b = Ast::node_token(token);
-      to_ast(Ok(tokens), ast)
-    }
-    _ => Err(Error::InvalidTokenSequence),
+fn bracket_expression(tokens: Vec<Token>) -> Result<Vec<Token>, Error> {
+  if tokens[0].kind != Kind::Bracket {
+    return Err(Error::InvalidExpression(
+      "Bad format: Is expected a bracket at this point".to_string(),
+    ));
   }
+  let mut count_opens = 0;
+  let mut count_closes = 0;
+  let mut expression: Vec<Token> = vec![];
+  let open = tokens[0].clone();
+  let close = bracket_close_of(&open).unwrap();
+
+  for token in tokens {
+    match &token {
+      token if *token == open => count_opens += 1,
+      token if *token == close => count_closes += 1,
+      _ => (),
+    }
+    expression.push(token);
+    if count_opens > 0 && count_opens == count_closes {
+      break;
+    }
+  }
+
+  Ok(expression)
+}
+
+fn bracket_close_of(bracket: &Token) -> Option<Token> {
+  match bracket.keys[0] {
+    Key::CurlyOpen => Some(Token::new_bracket(Key::CurlyClose)),
+    Key::BoxOpen => Some(Token::new_bracket(Key::BoxClose)),
+    Key::RoundOpen => Some(Token::new_bracket(Key::RoundClose)),
+    _ => None,
+  }
+}
+
+fn remove_border_bracket(mut tokens: Vec<Token>) -> Vec<Token> {
+  tokens.remove(0);
+  tokens.remove(tokens.len() - 1);
+  tokens
 }
 
 #[cfg(test)]

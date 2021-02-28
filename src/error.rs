@@ -1,7 +1,7 @@
 #[derive(Debug, PartialEq)]
 pub enum Error {
   DivisionByZero,
-  InvalidExpression,
+  InvalidExpression(String),
   InvalidOperand,
   InvalidTokenSequence,
   TokenNaN,
