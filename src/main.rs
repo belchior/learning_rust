@@ -25,3 +25,6 @@ impl Calc {
     interpreter::run(formula)
   }
 }
+
+#[cfg(test)]
+mod main_spec;

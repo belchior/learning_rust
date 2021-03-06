@@ -9,26 +9,47 @@ fn testing_key_precedence() {
     Key::precede(&RoundOpen, &RoundClose),
     "RoundOpen should precede RoundClose"
   );
+
   assert!(Key::precede(&RoundClose, &BoxOpen), "RoundClose should precede BoxOpen");
+
   assert!(Key::precede(&BoxOpen, &BoxClose), "BoxOpen should precede BoxClose");
+
   assert!(Key::precede(&BoxClose, &CurlyOpen), "BoxClose should precede CurlyOpen");
+
   assert!(
     Key::precede(&CurlyOpen, &CurlyClose),
     "CurlyOpen should precede CurlyClose"
   );
+
   assert!(
     Key::precede(&CurlyClose, &Multiplication),
     "CurlyClose should precede Multiplication"
   );
 
-  assert!(
+  assert_eq!(
     Key::precede(&Multiplication, &Division),
-    "Multiplication should precede Division"
+    false,
+    "Multiplication should not precede Division"
   );
+
+  assert_eq!(
+    Key::precede(&Multiplication, &Division),
+    false,
+    "Division should not precede Multiplication"
+  );
+
   assert!(Key::precede(&Division, &Addition), "Division should precede Addition");
-  assert!(
+
+  assert_eq!(
     Key::precede(&Addition, &Subtraction),
-    "Addition should precede Subtraction"
+    false,
+    "Addition should not precede Subtraction"
+  );
+
+  assert_eq!(
+    Key::precede(&Addition, &Subtraction),
+    false,
+    "Subtraction should not precede Addition"
   );
 }
 

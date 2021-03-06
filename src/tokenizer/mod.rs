@@ -99,7 +99,13 @@ impl Key {
   }
 
   pub fn precede(key_a: &Key, key_b: &Key) -> bool {
-    key_a <= key_b
+    match (key_a, key_b) {
+      (Key::Multiplication, Key::Division) => false,
+      (Key::Division, Key::Multiplication) => false,
+      (Key::Addition, Key::Subtraction) => false,
+      (Key::Subtraction, Key::Addition) => false,
+      _ => key_a < key_b,
+    }
   }
 
   fn to_char(&self) -> char {
