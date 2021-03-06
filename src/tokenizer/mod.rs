@@ -203,6 +203,7 @@ impl Token {
     Self::new(Kind::Operator, key)
   }
 
+  #[allow(dead_code)]
   pub fn new_space(keys: Vec<Key>) -> Token {
     if keys.len() == 0 {
       panic!("Invalid token arguments")
