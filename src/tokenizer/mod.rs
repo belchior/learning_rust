@@ -83,7 +83,7 @@ impl Key {
       '9' => Nine,
       '.' => Dot,
       ' ' => Space,
-      _ => panic!(format!("Undefined char: {}", char_value)),
+      _ => panic!("Undefined char: {}", char_value),
     }
   }
 
