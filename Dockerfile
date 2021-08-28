@@ -3,7 +3,7 @@ WORKDIR /builder
 COPY . .
 RUN cargo build --release --bin rust_calc
 
-FROM rust:1.54-alpine
+FROM alpine
 WORKDIR /app
 COPY --from=builder /builder/target/release/rust_calc ./target/release/rust_calc
 ENTRYPOINT ["target/release/rust_calc"]
