@@ -1,0 +1,7 @@
+.vscode/
+scripts/
+target/
+
+.DS_Store
+.env
+rustfmt.toml
